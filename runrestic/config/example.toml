@@ -1,0 +1,35 @@
+name = "example run" # if not set, the filename will be used without the extension
+
+repositories = [
+    "/tmp/restic-repo1",
+    "/tmp/restic-repo2"
+    ]
+
+[environment]
+RESTIC_PASSWORD = "CHANGEME"
+# or RESTIC_PASSWORD_FILE
+
+# https://restic.readthedocs.io/en/latest/040_backup.html#environment-variables
+
+[location]
+source_directories = [
+    "/var/lib/vim",
+    "/var/lib/man-db"
+    ]
+
+# exclude_patterns = []
+# exclude_files = []
+
+[retention]
+keep-last =  3
+keep-hourly =  5
+keep-weekly = 10
+keep-monthly = 30
+# https://restic.readthedocs.io/en/latest/060_forget.html#removing-snapshots-according-to-a-policy
+
+[consistency]
+checks = ["check-unused", "read-data"]
+
+
+[metrics.prometheus]
+path = "/var/lib/node_exporter/textfile_collector/runrestic.prom"
