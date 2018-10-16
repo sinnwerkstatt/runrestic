@@ -1,2 +1,2 @@
 # runrestic
-A wrapper for restic to run restic, based on read config files. It also outputs metrics
+A wrapper for restic. It runs restic based on config files and also outputs metrics.
