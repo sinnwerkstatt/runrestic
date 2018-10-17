@@ -53,7 +53,7 @@ def prometheus_generate_lines(metrics, repository, config_name):
         output += _restic_prune
     if metrics.get('restic_check'):
         output += _restic_check
-    output = "\n\n"
+    output += "\n\n"
     return output.format(**metrics, repository=repository, config_name=config_name)
 
 
