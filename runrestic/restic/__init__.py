@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 class ResticRepository:
     def __init__(self, repository, log_metrics, dry_run=False):
+        self.repository = repository
         self.basecommand = ['restic', '-r', repository]
         self.log_metrics = log_metrics
         if self.log_metrics:
@@ -20,7 +21,7 @@ class ResticRepository:
         self.initialized = self.check_initialization()
 
     def init(self):
-        logger.info('Restic::Init')
+        logger.info(f'Restic::Init::{self.repository}')
 
         if self.initialized is True:
             logger.warning('Repo already initialized')
@@ -54,7 +55,7 @@ class ResticRepository:
         return True
 
     def backup(self, location):
-        logger.info('Restic::Backup')
+        logger.info(f'Restic::Backup::{self.repository}')
         if not self.initialized:
             logger.error("Repo is not initialized")
             return
@@ -85,7 +86,7 @@ class ResticRepository:
             self.log['restic_backup']['rc'] = process_rc
 
     def forget(self, retention):
-        logger.info('Restic::Forget')
+        logger.info(f'Restic::Forget::{self.repository}')
         if not self.initialized:
             logger.error("Repo is not initialized")
             return
@@ -114,7 +115,7 @@ class ResticRepository:
             self.log['restic_forget']['rc'] = process_rc
 
     def prune(self):
-        logger.info('Restic::Prune')
+        logger.info(f'Restic::Prune::{self.repository}')
         if not self.initialized:
             logger.error("Repo is not initialized")
             return
@@ -136,7 +137,7 @@ class ResticRepository:
             self.log['restic_prune']['rc'] = process_rc
 
     def check(self, consistency):
-        logger.info('Restic::Check')
+        logger.info(f'Restic::Check::{self.repository}')
         if not self.initialized:
             logger.error("Repo is not initialized")
             return

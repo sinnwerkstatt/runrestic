@@ -69,7 +69,7 @@ configure a job runner to invoke it periodically.
 
 ### cron
 
-If you're using cron, download the [sample cron file](https://github.com/andreasnuesslein/runrestic/src/master/sample/cron/runrestic).
+If you're using cron, download the [sample cron file](https://raw.githubusercontent.com/andreasnuesslein/runrestic/master/sample/cron/runrestic).
 Then, from the directory where you downloaded it:
 
 ```bash
@@ -80,8 +80,8 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ### systemd
 
-If you're using systemd instead of cron to run jobs, download the [sample systemd service file](https://github.com/andreasnuesslein/runrestic/src/master/sample/systemd/runrestic.service)
-and the [sample systemd timer file](https://github.com/andreasnuesslein/runrestic/src/master/sample/systemd/runrestic.timer).
+If you're using systemd instead of cron to run jobs, download the [sample systemd service file](https://raw.githubusercontent.com/andreasnuesslein/runrestic/master/sample/systemd/runrestic.service)
+and the [sample systemd timer file](https://raw.githubusercontent.com/andreasnuesslein/runrestic/master/sample/systemd/runrestic.timer).
 Then, from the directory where you downloaded them:
 
 ```bash

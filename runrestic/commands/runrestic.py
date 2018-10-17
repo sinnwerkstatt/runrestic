@@ -26,6 +26,8 @@ def parse_arguments():
                         help='one or more from the following actions: [init,backup,prune,check]')
     parser.add_argument('-n', '--dry-run', dest='dry_run', action='store_true',
                         help='Apply --dry-run where applicable (i.e.: forget)')
+    parser.add_argument('-l', '--log-level', metavar='L', dest='log_level', default='warning',
+                        help='Choose from: critical, error, warning, info, debug. (default: warning)')
     args = parser.parse_args()
     return args
 
@@ -74,7 +76,7 @@ def run_configuration(config_filename, args):
 def main():
     args = parse_arguments()
     signals.configure_signals()
-    log.configure_logging()
+    log.configure_logging(args.log_level)
 
     try:
         config_filenames = tuple(collect.collect_config_filenames())
