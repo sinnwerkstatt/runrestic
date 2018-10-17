@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from argparse import ArgumentParser
 
@@ -6,18 +7,13 @@ import toml
 
 from runrestic.config import collect, signals, log
 from runrestic.config.environment import initialize_environment
+from runrestic.metrics import generate_lines, write_lines
 from runrestic.restic import ResticRepository
 
 logger = logging.getLogger(__name__)
 
 
-def parse_arguments(*arguments):
-    """
-    Given command-line arguments with which this script was invoked, parse the arguments and return
-    them as an ArgumentParser instance.
-    """
-    config_paths = collect.get_default_config_paths()
-
+def parse_arguments():
     parser = ArgumentParser(
         prog='runrestic',
         description='''
@@ -30,14 +26,13 @@ def parse_arguments(*arguments):
                         help='one or more from the following actions: [init,backup,prune,check]')
     parser.add_argument('-n', '--dry-run', dest='dry_run', action='store_true',
                         help='Apply --dry-run where applicable (i.e.: forget)')
-    args = parser.parse_args(arguments)
+    args = parser.parse_args()
     return args
 
 
 def run_configuration(config_filename, args):
     """
-    Parse a single configuration file, and execute its defined pruning, backups, and/or consistency
-    checks.
+    Parse a single configuration file, and execute its defined backups, pruning, and/or consistency checks.
     """
     logger.info(f'Parsing configuration file: {config_filename}')
     with open(config_filename) as file:
@@ -49,47 +44,35 @@ def run_configuration(config_filename, args):
 
     config['args'] = args
 
+    if not args.action:
+        args.action = ['backup', 'prune', 'check']
+
     initialize_environment(config.get('environment'))
+    log_metrics = config.get('metrics') and not args.dry_run and not args.action == ['init']
+    metrics_lines = ""
+
     for repository in config.get('repositories'):
-        repo = ResticRepository(repository, config)
+        repo = ResticRepository(repository, log_metrics, args.dry_run)
 
         if 'init' in args.action:
             repo.init()
         if 'backup' in args.action:
-            repo.backup()
+            repo.backup(config.get('location'))
         if 'prune' in args.action:
-            repo.forget(prune=True)
+            repo.forget(config.get('retention'))
+            repo.prune()
+        if 'check' in args.action:
+            repo.check(config.get('consistency'))
 
-
-    # try:
-    #     local_path = location.get('local_path', 'borg')
-    #     remote_path = location.get('remote_path')
-    #     borg_create.initialize_environment(environment)
-    #
-    #     if metrics and not args.dry_run:
-    #         stream = StringIO()
-    #         stream_handler = logging.StreamHandler(stream)
-    #         logging.getLogger('borg_output').addHandler(stream_handler)
-    #         logging.getLogger('borg_output').setLevel(logging.INFO)
-    #
-    #     if args.create:
-    #         hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
-    #
-    #     _run_commands(args, consistency, local_path, location, remote_path, retention, storage)
-    #
-    #     if args.create:
-    #         hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
-    #
-    #     if metrics and not args.dry_run:
-    #         create_metrics(metrics)
-    #
-    # except (OSError, CalledProcessError):
-    #     hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error')
-    #     raise
+        if log_metrics:
+            config_name = config.get('config_name') or os.path.basename(config_filename)
+            metrics_lines += generate_lines(repo.log, repository, config_name, config.get('metrics'))
+    if log_metrics:
+        write_lines(metrics_lines, config.get('metrics'))
 
 
 def main():
-    args = parse_arguments(*sys.argv[1:])
+    args = parse_arguments()
     signals.configure_signals()
     log.configure_logging()
 
@@ -100,8 +83,8 @@ def main():
             raise ValueError('Error: No configuration files found in')
 
         for config_filename in config_filenames:
-            print(config_filename)
             run_configuration(config_filename, args)
+
     except (ValueError, OSError) as error:
         print(error)
         sys.exit(1)
