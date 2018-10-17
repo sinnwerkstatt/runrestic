@@ -48,7 +48,7 @@ path = "/var/lib/node_exporter/textfile_collector/runrestic.prom"
 ```
 
 
-# Installation
+# Getting started
 
 To get up and running, first [install Restic](https://restic.net/#installation). 
 
@@ -61,6 +61,21 @@ sudo pip3 install --upgrade runrestic
 Note that your pip binary may have a different name than `pip3`. Make sure
 you're using Python 3, as runrestic does not support Python 2.
 
+Once you have `restic` and `runrestic` ready, you should put a config file in on of the scanned locations, namely:
+
+- /etc/runrestic.toml
+- /etc/runrestic/*example*.toml
+- ~/.config/runrestic/*example*.toml
+
+Afterwards, run 
+
+```bash
+runrestic init # to initialize all the repos in `repositories`
+
+runrestic  # without actions will do: runrestic backup prune check
+# or
+runrestic [action]
+```
 
 # Autopilot
 

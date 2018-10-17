@@ -9,6 +9,7 @@ from runrestic.config import collect, signals, log
 from runrestic.config.environment import initialize_environment
 from runrestic.metrics import generate_lines, write_lines
 from runrestic.restic import ResticRepository
+from runrestic import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +27,9 @@ def parse_arguments():
                         help='one or more from the following actions: [init,backup,prune,check]')
     parser.add_argument('-n', '--dry-run', dest='dry_run', action='store_true',
                         help='Apply --dry-run where applicable (i.e.: forget)')
-    parser.add_argument('-l', '--log-level', metavar='L', dest='log_level', default='warning',
+    parser.add_argument('-l', '--log-level', metavar='LOG_LEVEL', dest='log_level', default='warning',
                         help='Choose from: critical, error, warning, info, debug. (default: warning)')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
     args = parser.parse_args()
     return args
 

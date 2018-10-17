@@ -1,15 +1,14 @@
 from setuptools import setup, find_packages
 
-
-VERSION = '0.1.2'
+from runrestic import __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name='runrestic',
-    version=VERSION,
-    description='A wrapper script for Restic backup software that creates and prunes backups',
+    version=__version__,
+    description='A wrapper script for Restic backup software that inits, creates, prunes and checks backups',
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Andreas Nüßlein',
