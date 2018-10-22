@@ -147,17 +147,17 @@ class ResticRepository:
         cmd = self.basecommand + ['check']
 
         metrics = {
-            'errors': False, 'errors_data': False, 'errors_snapshots': False,
-            'read_data': False, 'check_unused': False,
+            'errors': 0, 'errors_data': 0, 'errors_snapshots': 0,
+            'read_data': 0, 'check_unused': 0,
         }
 
         if 'check-unused' in consistency.get('checks'):
             cmd += ['--check-unused']
-            metrics['check_unused'] = True
+            metrics['check_unused'] = 1
 
         if 'read-data' in consistency.get('checks'):
             cmd += ['--read-data']
-            metrics['read_data'] = True
+            metrics['read_data'] = 1
 
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
@@ -166,11 +166,11 @@ class ResticRepository:
             output = e.output
             process_rc = e.returncode
 
-            metrics['errors'] = True
+            metrics['errors'] = 1
             if "error: load <snapshot/" in output:
-                metrics['errors_snapshots'] = True
+                metrics['errors_snapshots'] = 1
             if "Pack ID does not match," in output:
-                metrics['errors_data'] = True
+                metrics['errors_data'] = 1
 
         logger.debug(" ".join(cmd))
         logger.debug(output)
