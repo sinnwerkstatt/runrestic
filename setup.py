@@ -31,6 +31,7 @@ setup(
     },
     install_requires=(
         'toml>=0.10.0',
+        'fastjsonschema>=2.4',
         'setuptools',
     ),
     include_package_data=True,

@@ -30,7 +30,7 @@ keep-last =  3
 keep-hourly =  5
 ```
 
-For a more comprehensive example see the [example.toml](https://github.com/andreasnuesslein/runrestic/blob/master/example.toml) or check the (schema.json)[https://github.com/andreasnuesslein/runrestic/blob/master/runrestic/config/schema.json]
+For a more comprehensive example see the [example.toml](https://github.com/andreasnuesslein/runrestic/blob/master/example.toml) or check the [schema.json](https://github.com/andreasnuesslein/runrestic/blob/master/runrestic/config/schema.json)
 
 # Getting started
 
