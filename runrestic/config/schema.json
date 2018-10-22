@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/andreasnuesslein/runrestic/master/runrestic/config/schema.json",
+  "title": "Runrestic Config",
+  "description": "Schema for runrestic configuration files, written in TOML",
+  "type": "object",
+  "required": [
+    "repositories",
+    "environment",
+    "location",
+    "retention",
+    "consistency"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "configuration name",
+      "examples": ["backup mysql"]
+    },
+
+    "repositories": {
+      "type": "array",
+      "title": "list of repositories to back up to",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "environment": {
+      "type": "object",
+      "title": "Set environment variables here",
+      "properties": {
+        "RESTIC_PASSWORD": {"type": "string", "examples": ["CHANGEME"]},
+        "RESTIC_PASSWORD_FILE": {"type": "string"}
+      },
+      "additionalProperties": { "type": "string" },
+      "oneOf": [
+        {"required": ["RESTIC_PASSWORD"]},
+        {"required": ["RESTIC_PASSWORD_FILE"]}
+      ]
+    },
+
+    "location": {
+      "type": "object",
+      "title": "specify anything relevant to what is to be backed up (and what not)",
+      "required": ["source_directories"],
+      "properties": {
+        "source_directories": {
+          "type": "array",
+          "title": "these locations are included in the backup",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "exclude_patterns": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "exclude_files": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+
+    "retention": {
+      "type": "object",
+      "title": "here you define how long old backups will be kept",
+      "anyOf": [
+        {"required": ["keep-last"]},
+        {"required": ["keep-hourly"]},
+        {"required": ["keep-daily"]},
+        {"required": ["keep-weekly"]},
+        {"required": ["keep-monthly"]},
+        {"required": ["keep-yearly"]},
+        {"required": ["keep-within"]},
+        {"required": ["keep-tag"]}
+      ],
+      "properties": {
+        "keep-last": {"type": "integer"},
+        "keep-hourly": {"type": "integer"},
+        "keep-daily": {"type": "integer"},
+        "keep-weekly": {"type": "integer"},
+        "keep-monthly": {"type": "integer"},
+        "keep-yearly": {"type": "integer"},
+        "keep-within": {"type": "integer"},
+        "keep-tag": {"type": "integer"}
+      }
+    },
+
+    "consistency": {
+      "type": "object",
+      "properties": {
+        "checks": {
+          "type": "array",
+          "title": "define flags for the restic check",
+          "items": {"type": "string"},
+          "default": ["check-unused", "read-data"]
+        }
+      }
+    },
+
+    "metrics": {
+      "type": "object",
+      "required": ["prometheus"],
+      "properties": {
+        "prometheus": {
+          "type": "object",
+          "required": ["path"],
+          "properties": {
+            "path": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}

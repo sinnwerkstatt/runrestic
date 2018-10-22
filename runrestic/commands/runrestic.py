@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 
 import toml
 
-from runrestic.config import collect, signals, log
+from runrestic.config import collect, signals, log, validate
 from runrestic.config.environment import initialize_environment
 from runrestic.metrics import generate_lines, write_lines
 from runrestic.restic import ResticRepository
@@ -27,8 +27,8 @@ def parse_arguments():
                         help='one or more from the following actions: [init,backup,prune,check]')
     parser.add_argument('-n', '--dry-run', dest='dry_run', action='store_true',
                         help='Apply --dry-run where applicable (i.e.: forget)')
-    parser.add_argument('-l', '--log-level', metavar='LOG_LEVEL', dest='log_level', default='warning',
-                        help='Choose from: critical, error, warning, info, debug. (default: warning)')
+    parser.add_argument('-l', '--log-level', metavar='LOG_LEVEL', dest='log_level', default='info',
+                        help='Choose from: critical, error, warning, info, debug. (default: info)')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
     args = parser.parse_args()
     return args
@@ -46,6 +46,8 @@ def run_configuration(config_filename, args):
             logger.warning(f"Problem parsing {config_filename}: {e}\n")
             return
 
+    validate.validate_configuration(config)
+
     config['args'] = args
 
     if not args.action:
@@ -56,10 +58,15 @@ def run_configuration(config_filename, args):
     metrics_lines = ""
 
     for repository in config.get('repositories'):
+        logger.info(f"Repository: {repository}")
         repo = ResticRepository(repository, log_metrics, args.dry_run)
 
         if 'init' in args.action:
             repo.init()
+        elif not repo.check_initialization():
+            logger.error(f"Repo {repository} is not initialized.\nHint: run `runrestic init`.")
+            return
+
         if 'backup' in args.action:
             repo.backup(config.get('location'))
         if 'prune' in args.action:

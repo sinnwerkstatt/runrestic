@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 toml = "*"
+fastjsonschema = "*"
 
 [dev-packages]
 ipdb = "*"

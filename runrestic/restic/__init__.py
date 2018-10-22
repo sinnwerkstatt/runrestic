@@ -18,19 +18,23 @@ class ResticRepository:
                 'last_run': datetime.now().timestamp(),
             }
         self.dry_run = dry_run
-        self.initialized = self.check_initialization()
 
     def init(self):
-        logger.info(f'Restic::Init::{self.repository}')
-
-        if self.initialized is True:
-            logger.warning('Repo already initialized')
-            return
+        logger.info(' - init')
 
         cmd = self.basecommand + ['init']
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+
+        try:
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+            process_rc = 0
+        except subprocess.CalledProcessError as e:
+            output = e.output
+            process_rc = e.returncode
+
         logger.debug(" ".join(cmd))
         logger.debug(output)
+
+        logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
 
     def snapshots(self):
         cmd = self.basecommand + ['snapshots', '--json']
@@ -55,10 +59,7 @@ class ResticRepository:
         return True
 
     def backup(self, location):
-        logger.info(f'Restic::Backup::{self.repository}')
-        if not self.initialized:
-            logger.error("Repo is not initialized")
-            return
+        logger.info(' - backup')
 
         cmd = self.basecommand + ['backup']
 
@@ -85,11 +86,10 @@ class ResticRepository:
             self.log['restic_backup'] = parse_backup(output)
             self.log['restic_backup']['rc'] = process_rc
 
+        logger.info('   ' + "✓" if process_rc == 0 else "✕")
+
     def forget(self, retention):
-        logger.info(f'Restic::Forget::{self.repository}')
-        if not self.initialized:
-            logger.error("Repo is not initialized")
-            return
+        logger.info(' - forget')
 
         cmd = self.basecommand + ['forget']
 
@@ -114,11 +114,10 @@ class ResticRepository:
             self.log['restic_forget'] = parse_forget(output)
             self.log['restic_forget']['rc'] = process_rc
 
+        logger.info('   ' + "✓" if process_rc == 0 else "✕")
+
     def prune(self):
-        logger.info(f'Restic::Prune::{self.repository}')
-        if not self.initialized:
-            logger.error("Repo is not initialized")
-            return
+        logger.info(" - prune")
 
         cmd = self.basecommand + ['prune']
 
@@ -136,11 +135,10 @@ class ResticRepository:
             self.log['restic_prune'] = parse_prune(output)
             self.log['restic_prune']['rc'] = process_rc
 
+        logger.info('   ' + "✓" if process_rc == 0 else "✕")
+
     def check(self, consistency):
-        logger.info(f'Restic::Check::{self.repository}')
-        if not self.initialized:
-            logger.error("Repo is not initialized")
-            return
+        logger.info(' - check')
 
         cmd = self.basecommand + ['check']
 
@@ -176,3 +174,5 @@ class ResticRepository:
         if self.log_metrics:
             self.log['restic_check'] = metrics
             self.log['restic_check']['rc'] = process_rc
+
+        logger.info('   ' + "✓" if process_rc == 0 else "✕")
