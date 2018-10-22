@@ -7,20 +7,20 @@
   "required": [
     "repositories",
     "environment",
-    "location",
-    "retention",
-    "consistency"
+    "backup",
+    "prune",
+    "check"
   ],
   "properties": {
     "name": {
       "type": "string",
       "title": "configuration name",
-      "examples": ["backup mysql"]
+      "examples": ["backup postgresql"]
     },
 
     "repositories": {
       "type": "array",
-      "title": "list of repositories to back up to",
+      "title": "list of (external) repositories to use",
       "items": {
         "type": "string"
       },
@@ -31,7 +31,7 @@
       "type": "object",
       "title": "Set environment variables here",
       "properties": {
-        "RESTIC_PASSWORD": {"type": "string", "examples": ["CHANGEME"]},
+        "RESTIC_PASSWORD": {"type": "string"},
         "RESTIC_PASSWORD_FILE": {"type": "string"}
       },
       "additionalProperties": { "type": "string" },
@@ -41,12 +41,12 @@
       ]
     },
 
-    "location": {
+    "backup": {
       "type": "object",
       "title": "specify anything relevant to what is to be backed up (and what not)",
-      "required": ["source_directories"],
+      "required": ["sources"],
       "properties": {
-        "source_directories": {
+        "sources": {
           "type": "array",
           "title": "these locations are included in the backup",
           "items": {"type": "string"},
@@ -60,13 +60,15 @@
         "exclude_files": {
           "type": "array",
           "items": {"type": "string"}
-        }
+        },
+        "pre_hook": {"type": "string"},
+        "post_hook": {"type": "string"}
       }
     },
 
-    "retention": {
+    "prune": {
       "type": "object",
-      "title": "here you define how long old backups will be kept",
+      "title": "anything relevant to the `restic prune` command",
       "anyOf": [
         {"required": ["keep-last"]},
         {"required": ["keep-hourly"]},
@@ -89,7 +91,7 @@
       }
     },
 
-    "consistency": {
+    "check": {
       "type": "object",
       "properties": {
         "checks": {
@@ -103,7 +105,6 @@
 
     "metrics": {
       "type": "object",
-      "required": ["prometheus"],
       "properties": {
         "prometheus": {
           "type": "object",

@@ -15,7 +15,7 @@ setup(
     author_email='nuts@noova.de',
     url='https://github.com/andreasnuesslein/runrestic',
     classifiers=(
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',

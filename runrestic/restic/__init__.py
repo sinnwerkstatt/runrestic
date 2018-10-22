@@ -35,6 +35,7 @@ class ResticRepository:
         logger.debug(output)
 
         logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
+        return process_rc
 
     def snapshots(self):
         cmd = self.basecommand + ['snapshots', '--json']
@@ -58,23 +59,23 @@ class ResticRepository:
             return False
         return True
 
-    def backup(self, location):
+    def backup(self, config):
         logger.info(' - backup')
 
         cmd = self.basecommand + ['backup']
 
-        if not location.get('source_directories'):
-            raise Exception("You need to specify source_directories.")
-        cmd += location.get('source_directories')
+        if not config.get('sources'):
+            raise Exception("You need to specify sources in [backup].")
+        cmd += config.get('sources')
 
-        for exclude_pattern in location.get('exclude_patterns', []):
+        for exclude_pattern in config.get('exclude_patterns', []):
             cmd += ['--exclude', exclude_pattern]
-        for exclude_file in location.get('exclude_files', []):
+        for exclude_file in config.get('exclude_files', []):
             cmd += ['--exclude-file', exclude_file]
 
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-            process_rc = 0
+            process_rc = 1 if 'error:' in output else 0
         except subprocess.CalledProcessError as e:
             output = e.output
             process_rc = e.returncode
@@ -86,9 +87,10 @@ class ResticRepository:
             self.log['restic_backup'] = parse_backup(output)
             self.log['restic_backup']['rc'] = process_rc
 
-        logger.info('   ' + "✓" if process_rc == 0 else "✕")
+        logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
+        return process_rc
 
-    def forget(self, retention):
+    def forget(self, config):
         logger.info(' - forget')
 
         cmd = self.basecommand + ['forget']
@@ -96,13 +98,13 @@ class ResticRepository:
         if self.dry_run:
             cmd += ['--dry-run']
 
-        for key, value in retention.items():
+        for key, value in config.items():
             if key.startswith('keep-'):
                 cmd += [f'--{key}', str(value)]
 
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-            process_rc = 0
+            process_rc = 1 if 'error:' in output else 0
         except subprocess.CalledProcessError as e:
             output = e.output
             process_rc = e.returncode
@@ -114,7 +116,8 @@ class ResticRepository:
             self.log['restic_forget'] = parse_forget(output)
             self.log['restic_forget']['rc'] = process_rc
 
-        logger.info('   ' + "✓" if process_rc == 0 else "✕")
+        logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
+        return process_rc
 
     def prune(self):
         logger.info(" - prune")
@@ -123,7 +126,7 @@ class ResticRepository:
 
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-            process_rc = 0
+            process_rc = 1 if 'error:' in output else 0
         except subprocess.CalledProcessError as e:
             output = e.output
             process_rc = e.returncode
@@ -135,7 +138,8 @@ class ResticRepository:
             self.log['restic_prune'] = parse_prune(output)
             self.log['restic_prune']['rc'] = process_rc
 
-        logger.info('   ' + "✓" if process_rc == 0 else "✕")
+        logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
+        return process_rc
 
     def check(self, consistency):
         logger.info(' - check')
@@ -157,7 +161,7 @@ class ResticRepository:
 
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-            process_rc = 0
+            process_rc = 1 if 'error:' in output else 0
         except subprocess.CalledProcessError as e:
             output = e.output
             process_rc = e.returncode
@@ -175,4 +179,5 @@ class ResticRepository:
             self.log['restic_check'] = metrics
             self.log['restic_check']['rc'] = process_rc
 
-        logger.info('   ' + "✓" if process_rc == 0 else "✕")
+        logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
+        return process_rc

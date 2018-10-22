@@ -13,40 +13,24 @@ Here's an example config file:
 repositories = [
     "/tmp/restic-repo",
     "sftp:user@host:/srv/restic-repo",
-    "s3:s3:s3.amazonaws.com/bucket_name"
+    "s3:s3.amazonaws.com/bucket_name"
     ]
 
 [environment]
 RESTIC_PASSWORD = "CHANGEME"
-# or RESTIC_PASSWORD_FILE = "/path/to/file"
-# see https://restic.readthedocs.io/en/latest/040_backup.html#environment-variables 
-# especially if you need to set environment variables like AWS_ACCESS_KEY_ID and such
 
-[location]
-source_directories = [
+[backup]
+sources = [
     "/home",
     "/var"
     ]
 
-# exclude_patterns = []
-# exclude_files = []
-# https://restic.readthedocs.io/en/stable/040_backup.html#including-and-excluding-files
-
-[retention]
+[prune]
 keep-last =  3
 keep-hourly =  5
-keep-weekly = 10
-keep-monthly = 30
-# https://restic.readthedocs.io/en/latest/060_forget.html#removing-snapshots-according-to-a-policy
-
-[consistency]
-checks = ["check-unused", "read-data"]
-# https://restic.readthedocs.io/en/stable/045_working_with_repos.html#checking-a-repo-s-integrity-and-consistency
-
-[metrics.prometheus]
-path = "/var/lib/node_exporter/textfile_collector/runrestic.prom"
 ```
 
+For a more comprehensive example see the [example.toml](https://github.com/andreasnuesslein/runrestic/blob/master/example.toml) or check the (schema.json)[https://github.com/andreasnuesslein/runrestic/blob/master/runrestic/config/schema.json]
 
 # Getting started
 

@@ -5,11 +5,13 @@ from argparse import ArgumentParser
 
 import toml
 
-from runrestic.config import collect, signals, log, validate
+from runrestic import __version__
+from runrestic.commands import hooks
+from runrestic.config import signals, log, validate
+from runrestic.config.collect import get_default_config_paths, collect_config_filenames
 from runrestic.config.environment import initialize_environment
 from runrestic.metrics import generate_lines, write_lines
 from runrestic.restic import ResticRepository
-from runrestic import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -57,23 +59,27 @@ def run_configuration(config_filename, args):
     log_metrics = config.get('metrics') and not args.dry_run and not args.action == ['init']
     metrics_lines = ""
 
+    rc = 0
+
     for repository in config.get('repositories'):
         logger.info(f"Repository: {repository}")
         repo = ResticRepository(repository, log_metrics, args.dry_run)
 
         if 'init' in args.action:
-            repo.init()
+            rc += repo.init()
         elif not repo.check_initialization():
             logger.error(f"Repo {repository} is not initialized.\nHint: run `runrestic init`.")
             return
 
         if 'backup' in args.action:
-            repo.backup(config.get('location'))
+            rc += hooks.execute_hook(config.get('backup'), 'pre_hook', repo)
+            rc += repo.backup(config.get('backup'))
+            rc += hooks.execute_hook(config.get('backup'), 'post_hook', repo)
         if 'prune' in args.action:
-            repo.forget(config.get('retention'))
-            repo.prune()
+            rc += repo.forget(config.get('prune'))
+            rc += repo.prune()
         if 'check' in args.action:
-            repo.check(config.get('consistency'))
+            rc += repo.check(config.get('check'))
 
         if log_metrics:
             config_name = config.get('config_name') or os.path.basename(config_filename)
@@ -81,6 +87,8 @@ def run_configuration(config_filename, args):
     if log_metrics:
         write_lines(metrics_lines, config.get('metrics'))
 
+    if rc > 0:
+        logger.error('There were problems in this run. Add `-l debug` to get a more comprehensive output')
 
 def main():
     args = parse_arguments()
@@ -88,10 +96,10 @@ def main():
     log.configure_logging(args.log_level)
 
     try:
-        config_filenames = tuple(collect.collect_config_filenames())
+        config_filenames = tuple(collect_config_filenames())
 
         if len(config_filenames) == 0:
-            raise ValueError('Error: No configuration files found in')
+            raise ValueError(f'Error: No configuration files found in {get_default_config_paths()}')
 
         for config_filename in config_filenames:
             run_configuration(config_filename, args)
