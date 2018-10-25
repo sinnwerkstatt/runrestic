@@ -1,4 +1,7 @@
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_default_config_paths():
@@ -20,7 +23,7 @@ def collect_config_filenames():
     '''
     Given a sequence of config paths, both filenames and directories, resolve that to just an
     iterable of files. Accomplish this by listing any given directories looking for contained config
-    files (ending with the ".yaml" extension). This is non-recursive, so any directories within the
+    files (ending with the ".toml" extension). This is non-recursive, so any directories within the
     given directories are ignored.
 
     Return paths even if they don't exist on disk, so the user can find out about missing
@@ -42,4 +45,8 @@ def collect_config_filenames():
         for filename in os.listdir(path):
             full_filename = os.path.join(path, filename)
             if full_filename.endswith('.toml') and not os.path.isdir(full_filename):
-                yield full_filename
+                octal_permissions = oct(os.stat(full_filename).st_mode)
+                if octal_permissions[-2:] != "00":  # file permissions are too broad
+                    logger.warning(f'NOT using {full_filename}.\nFile permissions are too open ({octal_permissions[-4:]}). Best set it to 0600: `chmod 0600 {full_filename}`\n')
+                else:
+                    yield full_filename
