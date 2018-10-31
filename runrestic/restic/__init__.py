@@ -40,12 +40,15 @@ class ResticRepository:
     def snapshots(self):
         cmd = self.basecommand + ['snapshots', '--json']
 
+        logger.debug(" ".join(cmd))
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
         except subprocess.CalledProcessError as e:
             if 'config: no such file or directory' in e.output:
                 return False
+            logger.error(e.output)
             raise e
+        logger.debug(output)
         try:
             snapshots_json = json.loads(output)
             # logger.debug(snapshots_json)
@@ -73,15 +76,15 @@ class ResticRepository:
         for exclude_file in config.get('exclude_files', []):
             cmd += ['--exclude-file', exclude_file]
 
+        logger.debug(" ".join(cmd))
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
             process_rc = 1 if 'error:' in output else 0
+            logger.debug(output)
         except subprocess.CalledProcessError as e:
             output = e.output
             process_rc = e.returncode
-
-        logger.debug(" ".join(cmd))
-        logger.debug(output)
+            logger.error(output)
 
         if self.log_metrics:
             self.log['restic_backup'] = parse_backup(output)
@@ -102,15 +105,15 @@ class ResticRepository:
             if key.startswith('keep-'):
                 cmd += [f'--{key}', str(value)]
 
+        logger.debug(" ".join(cmd))
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
             process_rc = 1 if 'error:' in output else 0
+            logger.debug(output)
         except subprocess.CalledProcessError as e:
             output = e.output
             process_rc = e.returncode
-
-        logger.debug(" ".join(cmd))
-        logger.debug(output)
+            logger.error(output)
 
         if self.log_metrics:
             self.log['restic_forget'] = parse_forget(output)
@@ -124,15 +127,15 @@ class ResticRepository:
 
         cmd = self.basecommand + ['prune']
 
+        logger.debug(" ".join(cmd))
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
             process_rc = 1 if 'error:' in output else 0
+            logger.debug(output)
         except subprocess.CalledProcessError as e:
             output = e.output
             process_rc = e.returncode
-
-        logger.debug(" ".join(cmd))
-        logger.debug(output)
+            logger.error(output)
 
         if self.log_metrics:
             self.log['restic_prune'] = parse_prune(output)
@@ -159,21 +162,21 @@ class ResticRepository:
             cmd += ['--read-data']
             metrics['read_data'] = 1
 
+        logger.debug(" ".join(cmd))
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
             process_rc = 1 if 'error:' in output else 0
+            logger.debug(output)
         except subprocess.CalledProcessError as e:
             output = e.output
             process_rc = e.returncode
+            logger.error(output)
 
             metrics['errors'] = 1
             if "error: load <snapshot/" in output:
                 metrics['errors_snapshots'] = 1
             if "Pack ID does not match," in output:
                 metrics['errors_data'] = 1
-
-        logger.debug(" ".join(cmd))
-        logger.debug(output)
 
         if self.log_metrics:
             self.log['restic_check'] = metrics
