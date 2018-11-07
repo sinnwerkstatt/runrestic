@@ -2,6 +2,7 @@ import json
 import logging
 import subprocess
 from datetime import datetime
+from typing import Dict, Any
 
 from runrestic.restic.output_parser import parse_prune, parse_backup, parse_forget
 
@@ -16,7 +17,7 @@ class ResticRepository:
         if self.log_metrics:
             self.log = {
                 'last_run': datetime.now().timestamp(),
-            }
+            }  # type: Dict[str, Any]
         self.dry_run = dry_run
 
     def init(self):
@@ -24,15 +25,15 @@ class ResticRepository:
 
         cmd = self.basecommand + ['init']
 
+        logger.debug(" ".join(cmd))
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
             process_rc = 0
+            logger.debug(output)
         except subprocess.CalledProcessError as e:
             output = e.output
             process_rc = e.returncode
-
-        logger.debug(" ".join(cmd))
-        logger.debug(output)
+            logger.error(output)
 
         logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
         return process_rc
@@ -43,12 +44,13 @@ class ResticRepository:
         logger.debug(" ".join(cmd))
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+            logger.debug(output)
         except subprocess.CalledProcessError as e:
             if 'config: no such file or directory' in e.output:
                 return False
             logger.error(e.output)
             raise e
-        logger.debug(output)
+
         try:
             snapshots_json = json.loads(output)
             # logger.debug(snapshots_json)
@@ -103,7 +105,7 @@ class ResticRepository:
 
         for key, value in config.items():
             if key.startswith('keep-'):
-                cmd += [f'--{key}', str(value)]
+                cmd += ['--{key}'.format(key=key), str(value)]
 
         logger.debug(" ".join(cmd))
         try:

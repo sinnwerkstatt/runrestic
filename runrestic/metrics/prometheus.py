@@ -58,7 +58,7 @@ def prometheus_generate_lines(metrics, repository, config_name):
     if metrics.get('restic_check'):
         output += _restic_check
     output += "\n\n"
-    return output.format(**metrics, repository=repository, config_name=config_name)
+    return output.format(repository=repository, config_name=config_name, **metrics)
 
 
 def prometheus_write_file(lines, path):

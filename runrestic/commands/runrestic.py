@@ -40,12 +40,12 @@ def run_configuration(config_filename, args):
     """
     Parse a single configuration file, and execute its defined backups, pruning, and/or consistency checks.
     """
-    logger.info(f'Parsing configuration file: {config_filename}')
+    logger.info('Parsing configuration file: {config_filename}'.format(config_filename=config_filename))
     with open(config_filename) as file:
         try:
             config = toml.load(file)
         except toml.TomlDecodeError as e:
-            logger.warning(f"Problem parsing {config_filename}: {e}\n")
+            logger.warning("Problem parsing {config_filename}: {e}\n".format(config_filename=config_filename, e=e))
             return
 
     validate.validate_configuration(config)
@@ -62,13 +62,13 @@ def run_configuration(config_filename, args):
     rc = 0
 
     for repository in config.get('repositories'):
-        logger.info(f"Repository: {repository}")
+        logger.info("Repository: {repository}".format(repository=repository))
         repo = ResticRepository(repository, log_metrics, args.dry_run)
 
         if 'init' in args.action:
             rc += repo.init()
         elif not repo.check_initialization():
-            logger.error(f"Repo {repository} is not initialized.\nHint: run `runrestic init`.")
+            logger.error("Repo {repository} is not initialized.\nHint: run `runrestic init`.".format(repository=repository))
             return
 
         if 'backup' in args.action:
@@ -90,6 +90,7 @@ def run_configuration(config_filename, args):
     if rc > 0:
         logger.error('There were problems in this run. Add `-l debug` to get a more comprehensive output')
 
+
 def main():
     args = parse_arguments()
     signals.configure_signals()
@@ -99,7 +100,7 @@ def main():
         config_filenames = tuple(collect_config_filenames())
 
         if len(config_filenames) == 0:
-            raise ValueError(f'Error: No configuration files found in {get_default_config_paths()}')
+            raise ValueError('Error: No configuration files found in {}'.format(get_default_config_paths()))
 
         for config_filename in config_filenames:
             run_configuration(config_filename, args)
