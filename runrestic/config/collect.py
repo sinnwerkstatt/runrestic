@@ -47,9 +47,12 @@ def collect_config_filenames():
             if full_filename.endswith('.toml') and not os.path.isdir(full_filename):
                 octal_permissions = oct(os.stat(full_filename).st_mode)
                 if octal_permissions[-2:] != "00":  # file permissions are too broad
-                    logger.warning('NOT using {full_filename}.\n'
-                                   'File permissions are too open ({octal_permissions[-4:]}).'
-                                   'Best set it to 0600: `chmod 0600 {full_filename}`\n').format(full_filename=full_filename,
-                                                                                                 octal_permissions=octal_permissions)
+                    logger.warning(
+                        ('NOT using {full_filename}.\n'
+                         'File permissions are too open ({octal_permissions}).'
+                         'Best set it to 0600: `chmod 0600 {full_filename}`\n').format(
+                            full_filename=full_filename, octal_permissions=octal_permissions[-4:]
+                        )
+                    )
                 else:
                     yield full_filename

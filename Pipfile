@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 toml = "*"
 fastjsonschema = "*"
+typing = {markers="python_version < '3.5'"}
+
 
 [dev-packages]
 ipdb = "*"
