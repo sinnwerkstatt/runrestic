@@ -49,7 +49,7 @@ def collect_config_filenames():
                 if octal_permissions[-2:] != "00":  # file permissions are too broad
                     logger.warning(
                         ('NOT using {full_filename}.\n'
-                         'File permissions are too open ({octal_permissions}).'
+                         'File permissions are too open ({octal_permissions}). '
                          'Best set it to 0600: `chmod 0600 {full_filename}`\n').format(
                             full_filename=full_filename, octal_permissions=octal_permissions[-4:]
                         )

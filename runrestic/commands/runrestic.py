@@ -7,6 +7,7 @@ import toml
 
 from runrestic import __version__
 from runrestic.commands import hooks
+from runrestic.commands.restic_shell import restic_shell
 from runrestic.config import signals, log, validate
 from runrestic.config.collect import get_default_config_paths, collect_config_filenames
 from runrestic.config.environment import initialize_environment
@@ -21,8 +22,8 @@ def parse_arguments():
         prog='runrestic',
         description='''
             A wrapper for restic. It runs restic based on config files and also outputs metrics.
-            If none of the --prune, --create, or --check options are given, then runrestic defaults
-            to all three: prune, create, and check archives.
+            To initialize a repo, run `runrestic init`.
+            If you don't define an action, it will default to `backup prune check`.
             '''
     )
     parser.add_argument('action', type=str, nargs='*',
@@ -36,10 +37,7 @@ def parse_arguments():
     return args
 
 
-def run_configuration(config_filename, args):
-    """
-    Parse a single configuration file, and execute its defined backups, pruning, and/or consistency checks.
-    """
+def parse_configuration(config_filename):
     logger.info('Parsing configuration file: {config_filename}'.format(config_filename=config_filename))
     with open(config_filename) as file:
         try:
@@ -49,7 +47,12 @@ def run_configuration(config_filename, args):
             return
 
     validate.validate_configuration(config)
+    if 'name' not in config:
+        config['name'] = os.path.basename(config_filename)
+    return config
 
+
+def run_configuration(config, args):
     config['args'] = args
 
     if not args.action:
@@ -82,8 +85,7 @@ def run_configuration(config_filename, args):
             rc += repo.check(config.get('check'))
 
         if log_metrics:
-            config_name = config.get('config_name') or os.path.basename(config_filename)
-            metrics_lines += generate_lines(repo.log, repository, config_name, config.get('metrics'))
+            metrics_lines += generate_lines(repo.log, repository, config['name'], config.get('metrics'))
     if log_metrics:
         write_lines(metrics_lines, config.get('metrics'))
 
@@ -102,8 +104,13 @@ def main():
         if len(config_filenames) == 0:
             raise ValueError('Error: No configuration files found in {}'.format(get_default_config_paths()))
 
-        for config_filename in config_filenames:
-            run_configuration(config_filename, args)
+        configs = [parse_configuration(config_filename) for config_filename in config_filenames]
+
+        if 'shell' in args.action:
+            return restic_shell(configs)
+
+        for config in configs:
+            run_configuration(config, args)
 
     except (ValueError, OSError) as error:
         print(error)

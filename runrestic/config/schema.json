@@ -8,8 +8,7 @@
     "repositories",
     "environment",
     "backup",
-    "prune",
-    "check"
+    "prune"
   ],
   "properties": {
     "name": {
