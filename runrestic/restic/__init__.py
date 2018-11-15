@@ -1,6 +1,7 @@
 import json
 import logging
 import subprocess
+import sys
 from datetime import datetime
 from typing import Dict, Any
 
@@ -38,31 +39,32 @@ class ResticRepository:
         logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
         return process_rc
 
-    def snapshots(self):
-        cmd = self.basecommand + ['snapshots', '--json']
-
-        logger.debug(" ".join(cmd))
-        try:
-            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-            logger.debug(output)
-        except subprocess.CalledProcessError as e:
-            if 'config: no such file or directory' in e.output:
-                return False
-            logger.error(e.output)
-            raise e
-
-        try:
-            snapshots_json = json.loads(output)
-            # logger.debug(snapshots_json)
-        except json.JSONDecodeError as e:
-            raise e
-        return snapshots_json
-
-    def check_initialization(self):
-        snapshots = self.snapshots()
-        if snapshots == False:
-            return False
-        return True
+    # this is currently not needed.
+    # def snapshots(self):
+    #     cmd = self.basecommand + ['snapshots', '--json']
+    #
+    #     logger.debug(" ".join(cmd))
+    #     try:
+    #         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+    #         logger.debug(output)
+    #     except subprocess.CalledProcessError as e:
+    #         if 'config: no such file or directory' in e.output:
+    #             return False
+    #         logger.error(e.output)
+    #         raise e
+    #
+    #     try:
+    #         snapshots_json = json.loads(output)
+    #         # logger.debug(snapshots_json)
+    #     except json.JSONDecodeError as e:
+    #         raise e
+    #     return snapshots_json
+    #
+    # def check_initialization(self):
+    #     snapshots = self.snapshots()
+    #     if snapshots == False:
+    #         return False
+    #     return True
 
     def backup(self, config):
         logger.info(' - backup')
@@ -84,6 +86,9 @@ class ResticRepository:
             process_rc = 1 if 'error:' in output else 0
             logger.debug(output)
         except subprocess.CalledProcessError as e:
+            if 'Is there a repository at the following location?' in e.output:
+                logger.error("\nIt seems like the repo is not initialized. Run `runrestic init`.")
+                sys.exit(1)
             output = e.output
             process_rc = e.returncode
             logger.error(output)
@@ -113,6 +118,9 @@ class ResticRepository:
             process_rc = 1 if 'error:' in output else 0
             logger.debug(output)
         except subprocess.CalledProcessError as e:
+            if 'Is there a repository at the following location?' in e.output:
+                logger.error("\nIt seems like the repo is not initialized. Run `runrestic init`.")
+                sys.exit(1)
             output = e.output
             process_rc = e.returncode
             logger.error(output)
@@ -135,6 +143,9 @@ class ResticRepository:
             process_rc = 1 if 'error:' in output else 0
             logger.debug(output)
         except subprocess.CalledProcessError as e:
+            if 'Is there a repository at the following location?' in e.output:
+                logger.error("\nIt seems like the repo is not initialized. Run `runrestic init`.")
+                sys.exit(1)
             output = e.output
             process_rc = e.returncode
             logger.error(output)

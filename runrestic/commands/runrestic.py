@@ -73,9 +73,6 @@ def run_configuration(config, args):
 
         if 'init' in args.action:
             rcs += repo.init()
-        elif not repo.check_initialization():
-            logger.error("Repo {repository} is not initialized.\nHint: run `runrestic init`.".format(repository=repository))
-            return
 
         if 'backup' in args.action:
             rcs += hooks.execute_hook(config, 'pre_hooks', repo)
