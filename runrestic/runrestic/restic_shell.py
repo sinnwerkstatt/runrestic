@@ -16,9 +16,16 @@ def restic_shell(configs: list):
             print("[{}] - {}".format(i, repo))
             all_repos += [(env, repo)]
             i += 1
-    selection = int(input("Choose a repo: "))
+
+    if i == 1:
+        selection = 0
+        print("Found only one repo.")
+    else:
+        selection = int(input("Choose a repo: "))
+
     env, repo = all_repos[selection]
     env.update({'RESTIC_REPOSITORY': repo})
+    print("Using: {}".format(repo))
     print("Spawning a new shell with the restic environment variables all set.")
     print("Try `restic snapshots` for example.")
     initialize_environment(env)
