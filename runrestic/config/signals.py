@@ -2,7 +2,8 @@ import os
 import signal
 
 
-def _handle_signal(signal_number, frame):  # pragma: no cover
+# noinspection PyUnusedLocal
+def _handle_signal(signal_number, frame):
     """
     Send the signal to all processes in runrestic's process group, which includes child process.
     """

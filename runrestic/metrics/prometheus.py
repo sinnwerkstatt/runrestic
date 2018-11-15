@@ -42,6 +42,11 @@ restic_check_check_unused{{config="{config_name}",repository="{repository}"}} {r
 restic_check_rc{{config="{config_name}",repository="{repository}"}} {restic_check[rc]}
 """
 
+_restic_stats = """
+restic_stats_total_file_count{{config="{config_name}",repository="{repository}"}} {restic_stats[total_file_count]}
+restic_stats_total_size_bytes{{config="{config_name}",repository="{repository}"}} {restic_stats[total_size]}
+"""
+
 
 def prometheus_generate_lines(metrics, repository, config_name):
     output = 'restic_last_run{{config="{config_name}",repository="{repository}"}} {last_run}\n'
@@ -57,6 +62,8 @@ def prometheus_generate_lines(metrics, repository, config_name):
         output += _restic_prune
     if metrics.get('restic_check'):
         output += _restic_check
+    if metrics.get('restic_stats'):
+        output += _restic_stats
     output += "\n\n"
     return output.format(repository=repository, config_name=config_name, **metrics)
 

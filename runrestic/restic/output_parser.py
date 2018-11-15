@@ -1,25 +1,6 @@
 import re
 
-re_bytes = re.compile('([0-9.]+) ?([a-zA-Z]*B)')
-re_time = re.compile('(?:([0-9]+):)?([0-9]+):([0-9]+)')
-
-
-def _parse_size(size: str):
-    number, unit = re_bytes.findall(size)[0]
-    units = {
-        "B": 1, "kB": 10 ** 3, "MB": 10 ** 6, "GB": 10 ** 9, "TB": 10 ** 12,
-        "KiB": 1024, "MiB": 2 ** 20, "GiB": 2 ** 30, "TiB": 2 ** 40,
-    }
-    return float(number) * units[unit]
-
-
-def _parse_time(time: str):
-    hours, minutes, seconds = (int(x) if x else 0 for x in re_time.findall(time)[0])
-    if minutes:
-        seconds += minutes * 60
-    if hours:
-        seconds += hours * 3600
-    return seconds
+from runrestic.tools.converters import parse_size, parse_time
 
 
 def parse_backup(output: str) -> dict:
@@ -31,8 +12,8 @@ def parse_backup(output: str) -> dict:
     return {
         'files': {'new': files_new, 'changed': files_changed, 'unmodified': files_unmodified},
         'dirs': {'new': dirs_new, 'changed': dirs_changed, 'unmodified': dirs_unmodified},
-        'processed': {'files': processed_files, 'size_bytes': _parse_size(processed_size), 'duration_seconds': _parse_time(processed_time)},
-        'added_to_repo': _parse_size(added_to_the_repo)
+        'processed': {'files': processed_files, 'size_bytes': parse_size(processed_size), 'duration_seconds': parse_time(processed_time)},
+        'added_to_repo': parse_size(added_to_the_repo)
     }
 
 
@@ -56,14 +37,14 @@ def parse_prune(output: str) -> dict:
     return {
         'containing_packs_before': containing_packs_before,
         'containing_blobs': containing_blobs_before,
-        'containing_size_bytes': _parse_size(containing_size_before),
+        'containing_size_bytes': parse_size(containing_size_before),
         'duplicate_blobs': duplicate_blobs,
-        'duplicate_size_bytes': _parse_size(duplicate_size),
+        'duplicate_size_bytes': parse_size(duplicate_size),
         'in_use_blobs': in_use_blobs,
         'removed_blobs': removed_blobs,
         'invalid_files': invalid_files,
         'deleted_packs': deleted_packs,
         'rewritten_packs': rewritten_packs,
-        'size_freed_bytes': _parse_size(size_freed),
+        'size_freed_bytes': parse_size(size_freed),
         'removed_index_files': removed_index_files,
     }

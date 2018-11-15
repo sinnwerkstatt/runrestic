@@ -6,13 +6,13 @@ from argparse import ArgumentParser
 import toml
 
 from runrestic import __version__
-from runrestic.runrestic import hooks
-from runrestic.runrestic.restic_shell import restic_shell
 from runrestic.config import signals, log, validate
 from runrestic.config.collect import get_default_config_paths, collect_config_filenames
 from runrestic.config.environment import initialize_environment
 from runrestic.metrics import generate_lines, write_lines
 from runrestic.restic import ResticRepository
+from runrestic.runrestic import hooks
+from runrestic.runrestic.restic_shell import restic_shell
 from runrestic.runrestic.tools import ReturnCodes
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ def parse_arguments():
         description='''
             A wrapper for restic. It runs restic based on config files and also outputs metrics.
             To initialize a repo, run `runrestic init`.
-            If you don't define an action, it will default to `backup prune check`.
+            If you don't define an action, it will default to `backup prune check`, and `stats` if metrics are set.
             '''
     )
     parser.add_argument('action', type=str, nargs='*',
@@ -58,12 +58,14 @@ def parse_configuration(config_filename):
 def run_configuration(config, args):
     config['args'] = args
 
-    if not args.action:
-        args.action = ['backup', 'prune', 'check']
-
     initialize_environment(config.get('environment'))
     log_metrics = config.get('metrics') and not args.dry_run and not args.action == ['init']
     metrics_lines = ""
+
+    if not args.action and log_metrics:
+        args.action = ['backup', 'prune', 'check', 'stats']
+    elif not args.action:
+        args.action = ['backup', 'prune', 'check']
 
     rcs = ReturnCodes(config['exit_on_error'])
 
@@ -83,6 +85,8 @@ def run_configuration(config, args):
             rcs += repo.prune()
         if 'check' in args.action:
             rcs += repo.check(config.get('check'))
+        if 'stats' in args.action:
+            rcs += repo.stats()
 
         if log_metrics:
             metrics_lines += generate_lines(repo.log, repository, config['name'], config.get('metrics'))

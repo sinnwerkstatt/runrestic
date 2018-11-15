@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 from runrestic.restic.output_parser import parse_prune, parse_backup, parse_forget
+from runrestic.tools.converters import make_size
 
 logger = logging.getLogger(__name__)
 
@@ -200,4 +201,36 @@ class ResticRepository:
             self.log['restic_check']['rc'] = process_rc
 
         logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
+        return process_rc
+
+    def stats(self):
+        logger.info(' - stats')
+        cmd = self.basecommand + ['stats', '-q', '--json']
+        try:
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+            process_rc = 1 if 'error:' in output else 0
+
+            stats_json = json.loads(output)
+            logger.debug(stats_json)
+            logger.info(
+                "Total File Count: {}\nTotal Size: {}".format(
+                    stats_json['total_file_count'],
+                    make_size(stats_json['total_size'])
+                )
+            )
+
+            if self.log_metrics:
+                self.log['restic_stats'] = stats_json
+
+        except subprocess.CalledProcessError as e:
+            if 'Is there a repository at the following location?' in e.output:
+                logger.error("\nIt seems like the repo is not initialized. Run `runrestic init`.")
+                sys.exit(1)
+            output = e.output
+            process_rc = e.returncode
+            logger.error(output)
+
+        except json.JSONDecodeError as e:
+            raise e
+
         return process_rc
