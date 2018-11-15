@@ -90,7 +90,6 @@ def run_configuration(config, args):
         write_lines(metrics_lines, config.get('metrics'))
 
     if any(rcs):
-        logger.error(rcs)
         logger.error('There were problems in this run. Add `-l debug` to get a more comprehensive output')
 
 

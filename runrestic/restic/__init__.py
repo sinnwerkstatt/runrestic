@@ -167,13 +167,14 @@ class ResticRepository:
             'read_data': 0, 'check_unused': 0,
         }
 
-        if 'check-unused' in consistency.get('checks'):
-            cmd += ['--check-unused']
-            metrics['check_unused'] = 1
+        if consistency and 'checks' in consistency:
+            if 'check-unused' in consistency.get('checks'):
+                cmd += ['--check-unused']
+                metrics['check_unused'] = 1
 
-        if 'read-data' in consistency.get('checks'):
-            cmd += ['--read-data']
-            metrics['read_data'] = 1
+            if 'read-data' in consistency.get('checks'):
+                cmd += ['--read-data']
+                metrics['read_data'] = 1
 
         logger.debug(" ".join(cmd))
         try:
@@ -181,6 +182,9 @@ class ResticRepository:
             process_rc = 1 if 'error:' in output else 0
             logger.debug(output)
         except subprocess.CalledProcessError as e:
+            if 'Is there a repository at the following location?' in e.output:
+                logger.error("\nIt seems like the repo is not initialized. Run `runrestic init`.")
+                sys.exit(1)
             output = e.output
             process_rc = e.returncode
             logger.error(output)
