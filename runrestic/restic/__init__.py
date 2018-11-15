@@ -2,6 +2,7 @@ import json
 import logging
 import subprocess
 import sys
+import time
 from datetime import datetime
 from typing import Dict, Any
 
@@ -40,34 +41,8 @@ class ResticRepository:
         logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
         return process_rc
 
-    # this is currently not needed.
-    # def snapshots(self):
-    #     cmd = self.basecommand + ['snapshots', '--json']
-    #
-    #     logger.debug(" ".join(cmd))
-    #     try:
-    #         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-    #         logger.debug(output)
-    #     except subprocess.CalledProcessError as e:
-    #         if 'config: no such file or directory' in e.output:
-    #             return False
-    #         logger.error(e.output)
-    #         raise e
-    #
-    #     try:
-    #         snapshots_json = json.loads(output)
-    #         # logger.debug(snapshots_json)
-    #     except json.JSONDecodeError as e:
-    #         raise e
-    #     return snapshots_json
-    #
-    # def check_initialization(self):
-    #     snapshots = self.snapshots()
-    #     if snapshots == False:
-    #         return False
-    #     return True
-
     def backup(self, config):
+        time_start = time.time()
         logger.info(' - backup')
 
         cmd = self.basecommand + ['backup']
@@ -96,12 +71,14 @@ class ResticRepository:
 
         if self.log_metrics:
             self.log['restic_backup'] = parse_backup(output)
+            self.log['restic_backup']['duration_seconds'] = time.time() - time_start
             self.log['restic_backup']['rc'] = process_rc
 
         logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
         return process_rc
 
     def forget(self, config):
+        time_start = time.time()
         logger.info(' - forget')
 
         cmd = self.basecommand + ['forget']
@@ -128,12 +105,14 @@ class ResticRepository:
 
         if self.log_metrics:
             self.log['restic_forget'] = parse_forget(output)
+            self.log['restic_forget']['duration_seconds'] = time.time() - time_start
             self.log['restic_forget']['rc'] = process_rc
 
         logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
         return process_rc
 
     def prune(self):
+        time_start = time.time()
         logger.info(" - prune")
 
         cmd = self.basecommand + ['prune']
@@ -153,12 +132,14 @@ class ResticRepository:
 
         if self.log_metrics:
             self.log['restic_prune'] = parse_prune(output)
+            self.log['restic_prune']['duration_seconds'] = time.time() - time_start
             self.log['restic_prune']['rc'] = process_rc
 
         logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
         return process_rc
 
     def check(self, consistency):
+        time_start = time.time()
         logger.info(' - check')
 
         cmd = self.basecommand + ['check']
@@ -198,21 +179,24 @@ class ResticRepository:
 
         if self.log_metrics:
             self.log['restic_check'] = metrics
+            self.log['restic_check']['duration_seconds'] = time.time() - time_start
             self.log['restic_check']['rc'] = process_rc
 
         logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
         return process_rc
 
     def stats(self):
+        time_start = time.time()
         logger.info(' - stats')
+
         cmd = self.basecommand + ['stats', '-q', '--json']
+
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
             process_rc = 1 if 'error:' in output else 0
 
             stats_json = json.loads(output)
-            logger.debug(stats_json)
-            logger.info(
+            logger.debug(
                 "Total File Count: {}\nTotal Size: {}".format(
                     stats_json['total_file_count'],
                     make_size(stats_json['total_size'])
@@ -221,6 +205,8 @@ class ResticRepository:
 
             if self.log_metrics:
                 self.log['restic_stats'] = stats_json
+                self.log['restic_stats']['duration_seconds'] = time.time() - time_start
+                self.log['restic_stats']['rc'] = process_rc
 
         except subprocess.CalledProcessError as e:
             if 'Is there a repository at the following location?' in e.output:

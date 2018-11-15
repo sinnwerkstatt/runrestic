@@ -1,5 +1,6 @@
 import logging
 import subprocess
+import time
 
 from runrestic.restic import ResticRepository
 
@@ -7,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def execute_hook(config: dict, name: str, repo: ResticRepository):
+    time_start = time.time()
 
     commands = config.get('backup').get(name, [])
 
@@ -32,7 +34,9 @@ def execute_hook(config: dict, name: str, repo: ResticRepository):
         rcs += [process_rc]
 
     if repo.log_metrics:
-        repo.log['restic_{name}'.format(name=name)] = {}
-        repo.log['restic_{name}'.format(name=name)]['rc'] = 1 if any(rcs) else 0
+        repo.log['restic_{name}'.format(name=name)] = {
+            'duration_seconds': time.time() - time_start,
+            'rc': 1 if any(rcs) else 0
+        }
 
     return rcs

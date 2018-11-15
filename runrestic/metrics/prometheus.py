@@ -1,3 +1,18 @@
+_restic = """
+restic_last_run{{config="{config_name}",repository="{repository}"}} {last_run}
+restic_total_duration_seconds{{config="{config_name}",repository="{repository}"}} {total_duration_seconds}
+"""
+
+_restic_pre_hooks = """
+restic_pre_hooks_duration_seconds{{config="{config_name}",repository="{repository}"}} {restic_pre_hooks[duration_seconds]}
+restic_pre_hooks_rc{{config="{config_name}",repository="{repository}"}} {restic_pre_hooks[rc]}
+"""
+
+_restic_post_hooks = """
+restic_post_hooks_duration_seconds{{config="{config_name}",repository="{repository}"}} {restic_post_hooks[duration_seconds]}
+restic_post_hooks_rc{{config="{config_name}",repository="{repository}"}} {restic_post_hooks[rc]}
+"""
+
 _restic_backup = """
 restic_backup_files_new{{config="{config_name}",repository="{repository}"}} {restic_backup[files][new]}
 restic_backup_files_changed{{config="{config_name}",repository="{repository}"}} {restic_backup[files][changed]}
@@ -9,6 +24,7 @@ restic_backup_processed_files{{config="{config_name}",repository="{repository}"}
 restic_backup_processed_size_bytes{{config="{config_name}",repository="{repository}"}} {restic_backup[processed][size_bytes]}
 restic_backup_processed_duration_seconds{{config="{config_name}",repository="{repository}"}} {restic_backup[processed][duration_seconds]}
 restic_backup_added_to_repo{{config="{config_name}",repository="{repository}"}} {restic_backup[added_to_repo]}
+restic_backup_duration_seconds{{config="{config_name}",repository="{repository}"}} {restic_backup[duration_seconds]}
 restic_backup_rc{{config="{config_name}",repository="{repository}"}} {restic_backup[rc]}
 """
 
@@ -30,6 +46,7 @@ restic_prune_deleted_packs{{config="{config_name}",repository="{repository}"}} {
 restic_prune_rewritten_packs{{config="{config_name}",repository="{repository}"}} {restic_prune[rewritten_packs]}
 restic_prune_size_freed_bytes{{config="{config_name}",repository="{repository}"}} {restic_prune[size_freed_bytes]}
 restic_prune_removed_index_files{{config="{config_name}",repository="{repository}"}} {restic_prune[removed_index_files]}
+restic_prune_duration_seconds{{config="{config_name}",repository="{repository}"}} {restic_prune[duration_seconds]}
 restic_prune_rc{{config="{config_name}",repository="{repository}"}} {restic_prune[rc]}
 """
 
@@ -39,21 +56,24 @@ restic_check_errors_data{{config="{config_name}",repository="{repository}"}} {re
 restic_check_errors_snapshots{{config="{config_name}",repository="{repository}"}} {restic_check[errors_snapshots]}
 restic_check_read_data{{config="{config_name}",repository="{repository}"}} {restic_check[read_data]}
 restic_check_check_unused{{config="{config_name}",repository="{repository}"}} {restic_check[check_unused]}
+restic_check_duration_seconds{{config="{config_name}",repository="{repository}"}} {restic_check[duration_seconds]}
 restic_check_rc{{config="{config_name}",repository="{repository}"}} {restic_check[rc]}
 """
 
 _restic_stats = """
 restic_stats_total_file_count{{config="{config_name}",repository="{repository}"}} {restic_stats[total_file_count]}
 restic_stats_total_size_bytes{{config="{config_name}",repository="{repository}"}} {restic_stats[total_size]}
+restic_stats_duration_seconds{{config="{config_name}",repository="{repository}"}} {restic_stats[duration_seconds]}
+restic_stats_rc{{config="{config_name}",repository="{repository}"}} {restic_stats[rc]}
 """
 
 
 def prometheus_generate_lines(metrics, repository, config_name):
-    output = 'restic_last_run{{config="{config_name}",repository="{repository}"}} {last_run}\n'
+    output = _restic
     if metrics.get('restic_pre_hooks'):
-        output += 'restic_pre_hooks_rc{{config="{config_name}",repository="{repository}"}} {restic_pre_hooks[rc]}\n'
+        output += _restic_pre_hooks
     if metrics.get('restic_post_hooks'):
-        output += 'restic_post_hooks_rc{{config="{config_name}",repository="{repository}"}} {restic_post_hooks[rc]}\n'
+        output += _restic_post_hooks
     if metrics.get('restic_backup'):
         output += _restic_backup
     if metrics.get('restic_forget'):

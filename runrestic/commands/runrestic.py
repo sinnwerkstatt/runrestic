@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import time
 from argparse import ArgumentParser
 
 import toml
@@ -70,6 +71,7 @@ def run_configuration(config, args):
     rcs = ReturnCodes(config['exit_on_error'])
 
     for repository in config.get('repositories'):
+        total_time = time.time()
         logger.info("Repository: {repository}".format(repository=repository))
         repo = ResticRepository(repository, log_metrics, args.dry_run)
 
@@ -89,6 +91,7 @@ def run_configuration(config, args):
             rcs += repo.stats()
 
         if log_metrics:
+            repo.log['total_duration_seconds'] = time.time() - total_time
             metrics_lines += generate_lines(repo.log, repository, config['name'], config.get('metrics'))
     if log_metrics:
         write_lines(metrics_lines, config.get('metrics'))
