@@ -45,10 +45,10 @@ restic_check_rc{{config="{config_name}",repository="{repository}"}} {restic_chec
 
 def prometheus_generate_lines(metrics, repository, config_name):
     output = 'restic_last_run{{config="{config_name}",repository="{repository}"}} {last_run}\n'
-    if metrics.get('restic_pre_hook'):
-        output += 'restic_pre_hook_rc{{config="{config_name}",repository="{repository}"}} {restic_pre_hook[rc]}\n'
-    if metrics.get('restic_post_hook'):
-        output += 'restic_post_hook_rc{{config="{config_name}",repository="{repository}"}} {restic_post_hook[rc]}\n'
+    if metrics.get('restic_pre_hooks'):
+        output += 'restic_pre_hooks_rc{{config="{config_name}",repository="{repository}"}} {restic_pre_hooks[rc]}\n'
+    if metrics.get('restic_post_hooks'):
+        output += 'restic_post_hooks_rc{{config="{config_name}",repository="{repository}"}} {restic_post_hooks[rc]}\n'
     if metrics.get('restic_backup'):
         output += _restic_backup
     if metrics.get('restic_forget'):

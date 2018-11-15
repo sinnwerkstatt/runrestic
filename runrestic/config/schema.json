@@ -11,24 +11,17 @@
     "prune"
   ],
   "properties": {
-    "name": {
-      "type": "string",
-      "title": "configuration name",
-      "examples": ["backup postgresql"]
-    },
+    "name": {"type": "string"},
 
     "repositories": {
       "type": "array",
-      "title": "list of (external) repositories to use",
-      "items": {
-        "type": "string"
-      },
+      "items": {"type": "string"},
       "minItems": 1,
       "uniqueItems": true
     },
+
     "environment": {
       "type": "object",
-      "title": "Set environment variables here",
       "properties": {
         "RESTIC_PASSWORD": {"type": "string"},
         "RESTIC_PASSWORD_FILE": {"type": "string"}
@@ -42,32 +35,24 @@
 
     "backup": {
       "type": "object",
-      "title": "specify anything relevant to what is to be backed up (and what not)",
       "required": ["sources"],
       "properties": {
         "sources": {
           "type": "array",
-          "title": "these locations are included in the backup",
           "items": {"type": "string"},
           "minItems": 1,
           "uniqueItems": true
         },
-        "exclude_patterns": {
-          "type": "array",
-          "items": {"type": "string"}
-        },
-        "exclude_files": {
-          "type": "array",
-          "items": {"type": "string"}
-        },
-        "pre_hook": {"type": "string"},
-        "post_hook": {"type": "string"}
+        "exclude_patterns": {"type": "array", "items": {"type": "string"}},
+        "exclude_files": {"type": "array", "items": {"type": "string"}},
+        "pre_hooks": {"type": "array", "items": {"type": "string"}},
+        "post_hooks": {"type": "array", "items": {"type": "string"}},
+        "continue_on_pre_hooks_error": {"type": "boolean", "default": false}
       }
     },
 
     "prune": {
       "type": "object",
-      "title": "anything relevant to the `restic prune` command",
       "anyOf": [
         {"required": ["keep-last"]},
         {"required": ["keep-hourly"]},
@@ -95,7 +80,6 @@
       "properties": {
         "checks": {
           "type": "array",
-          "title": "define flags for the restic check",
           "items": {"type": "string"},
           "default": ["check-unused", "read-data"]
         }

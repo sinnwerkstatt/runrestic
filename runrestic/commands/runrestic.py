@@ -6,13 +6,14 @@ from argparse import ArgumentParser
 import toml
 
 from runrestic import __version__
-from runrestic.commands import hooks
-from runrestic.commands.restic_shell import restic_shell
+from runrestic.runrestic import hooks
+from runrestic.runrestic.restic_shell import restic_shell
 from runrestic.config import signals, log, validate
 from runrestic.config.collect import get_default_config_paths, collect_config_filenames
 from runrestic.config.environment import initialize_environment
 from runrestic.metrics import generate_lines, write_lines
 from runrestic.restic import ResticRepository
+from runrestic.runrestic.tools import ReturnCodes
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,8 @@ def parse_configuration(config_filename):
     validate.validate_configuration(config)
     if 'name' not in config:
         config['name'] = os.path.basename(config_filename)
+    if 'exit_on_error' not in config:
+        config['exit_on_error'] = True
     return config
 
 
@@ -62,34 +65,35 @@ def run_configuration(config, args):
     log_metrics = config.get('metrics') and not args.dry_run and not args.action == ['init']
     metrics_lines = ""
 
-    rc = 0
+    rcs = ReturnCodes(config['exit_on_error'])
 
     for repository in config.get('repositories'):
         logger.info("Repository: {repository}".format(repository=repository))
         repo = ResticRepository(repository, log_metrics, args.dry_run)
 
         if 'init' in args.action:
-            rc += repo.init()
+            rcs += repo.init()
         elif not repo.check_initialization():
             logger.error("Repo {repository} is not initialized.\nHint: run `runrestic init`.".format(repository=repository))
             return
 
         if 'backup' in args.action:
-            rc += hooks.execute_hook(config.get('backup'), 'pre_hook', repo)
-            rc += repo.backup(config.get('backup'))
-            rc += hooks.execute_hook(config.get('backup'), 'post_hook', repo)
+            rcs += hooks.execute_hook(config, 'pre_hooks', repo)
+            rcs += repo.backup(config.get('backup'))
+            rcs += hooks.execute_hook(config, 'post_hooks', repo)
         if 'prune' in args.action:
-            rc += repo.forget(config.get('prune'))
-            rc += repo.prune()
+            rcs += repo.forget(config.get('prune'))
+            rcs += repo.prune()
         if 'check' in args.action:
-            rc += repo.check(config.get('check'))
+            rcs += repo.check(config.get('check'))
 
         if log_metrics:
             metrics_lines += generate_lines(repo.log, repository, config['name'], config.get('metrics'))
     if log_metrics:
         write_lines(metrics_lines, config.get('metrics'))
 
-    if rc > 0:
+    if any(rcs):
+        logger.error(rcs)
         logger.error('There were problems in this run. Add `-l debug` to get a more comprehensive output')
 
 

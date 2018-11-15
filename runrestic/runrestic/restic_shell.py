@@ -20,6 +20,7 @@ def restic_shell(configs: list):
     env, repo = all_repos[selection]
     env.update({'RESTIC_REPOSITORY': repo})
     print("Spawning a new shell with the restic environment variables all set.")
+    print("Try `restic snapshots` for example.")
     initialize_environment(env)
     pty.spawn(os.environ.get('SHELL'))
     print("You've exited your restic shell.")

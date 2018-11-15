@@ -20,8 +20,8 @@ sources = [
 exclude_patterns = ['pg_stats_tmp/']
 # exclude_files = []
 
-pre_hook = "systemctl stop postgresql"
-post_hook = "systemctl start postgresql"
+pre_hooks = ["systemctl stop postgresql"]
+post_hooks = ["systemctl start postgresql"]
 
 [prune]
 keep-last =  3
