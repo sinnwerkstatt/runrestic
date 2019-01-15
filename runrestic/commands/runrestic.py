@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from argparse import ArgumentParser
+from datetime import datetime
 
 import toml
 
@@ -10,7 +11,7 @@ from runrestic import __version__
 from runrestic.config import signals, log, validate
 from runrestic.config.collect import get_default_config_paths, collect_config_filenames
 from runrestic.config.environment import initialize_environment
-from runrestic.metrics import generate_lines, write_lines
+from runrestic.metrics import write_lines
 from runrestic.restic import ResticRepository
 from runrestic.runrestic import hooks
 from runrestic.runrestic.restic_shell import restic_shell
@@ -58,10 +59,10 @@ def parse_configuration(config_filename):
 
 def run_configuration(config, args):
     config['args'] = args
+    total_time = time.time()
 
     initialize_environment(config.get('environment'))
     log_metrics = config.get('metrics') and not args.dry_run and not args.action == ['init']
-    metrics_lines = ""
 
     if not args.action and log_metrics:
         args.action = ['backup', 'prune', 'check', 'stats']
@@ -70,8 +71,12 @@ def run_configuration(config, args):
 
     rcs = ReturnCodes(config['exit_on_error'])
 
+    logs = {'repositories': {}}
+
+    if 'backup' in args.action and config.get('backup').get('pre_hooks'):
+        logs['restic_pre_hooks'] = hooks.execute_hook(config, 'pre_hooks')
+
     for repository in config.get('repositories'):
-        total_time = time.time()
         logger.info("Repository: {repository}".format(repository=repository))
         repo = ResticRepository(repository, log_metrics, args.dry_run)
 
@@ -79,9 +84,7 @@ def run_configuration(config, args):
             rcs += repo.init()
 
         if 'backup' in args.action:
-            rcs += hooks.execute_hook(config, 'pre_hooks', repo)
             rcs += repo.backup(config.get('backup'))
-            rcs += hooks.execute_hook(config, 'post_hooks', repo)
         if 'prune' in args.action:
             rcs += repo.forget(config.get('prune'))
             rcs += repo.prune()
@@ -90,11 +93,15 @@ def run_configuration(config, args):
         if 'stats' in args.action:
             rcs += repo.stats()
 
-        if log_metrics:
-            repo.log['total_duration_seconds'] = time.time() - total_time
-            metrics_lines += generate_lines(repo.log, repository, config['name'], config.get('metrics'))
+        logs['repositories'][repository] = repo.log
+
+    if 'backup' in args.action and config.get('backup').get('post_hooks'):
+        logs['restic_post_hooks'] = hooks.execute_hook(config, 'post_hooks')
+
     if log_metrics:
-        write_lines(metrics_lines, config.get('metrics'))
+        logs['last_run'] = datetime.now().timestamp()
+        logs['total_duration_seconds'] = time.time() - total_time
+        write_lines(logs, config['name'], config.get('metrics'))
 
     if any(rcs):
         logger.error('There were problems in this run. Add `-l debug` to get a more comprehensive output')

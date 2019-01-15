@@ -3,8 +3,6 @@ import logging
 import subprocess
 import sys
 import time
-from datetime import datetime
-from typing import Dict, Any
 
 from runrestic.restic.output_parser import parse_prune, parse_backup, parse_forget
 from runrestic.tools.converters import make_size
@@ -18,9 +16,7 @@ class ResticRepository:
         self.basecommand = ['restic', '-r', repository]
         self.log_metrics = log_metrics
         if self.log_metrics:
-            self.log = {
-                'last_run': datetime.now().timestamp(),
-            }  # type: Dict[str, Any]
+            self.log = {}
         self.dry_run = dry_run
 
     def init(self):

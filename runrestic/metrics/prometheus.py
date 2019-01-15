@@ -1,16 +1,16 @@
 _restic = """
-restic_last_run{{config="{config_name}",repository="{repository}"}} {last_run}
-restic_total_duration_seconds{{config="{config_name}",repository="{repository}"}} {total_duration_seconds}
+restic_last_run{{config="{config_name}"}} {last_run}
+restic_total_duration_seconds{{config="{config_name}"}} {total_duration_seconds}
 """
 
 _restic_pre_hooks = """
-restic_pre_hooks_duration_seconds{{config="{config_name}",repository="{repository}"}} {restic_pre_hooks[duration_seconds]}
-restic_pre_hooks_rc{{config="{config_name}",repository="{repository}"}} {restic_pre_hooks[rc]}
+restic_pre_hooks_duration_seconds{{config="{config_name}"}} {restic_pre_hooks[duration_seconds]}
+restic_pre_hooks_rc{{config="{config_name}"}} {restic_pre_hooks[rc]}
 """
 
 _restic_post_hooks = """
-restic_post_hooks_duration_seconds{{config="{config_name}",repository="{repository}"}} {restic_post_hooks[duration_seconds]}
-restic_post_hooks_rc{{config="{config_name}",repository="{repository}"}} {restic_post_hooks[rc]}
+restic_post_hooks_duration_seconds{{config="{config_name}"}} {restic_post_hooks[duration_seconds]}
+restic_post_hooks_rc{{config="{config_name}"}} {restic_post_hooks[rc]}
 """
 
 _restic_backup = """
@@ -68,24 +68,30 @@ restic_stats_rc{{config="{config_name}",repository="{repository}"}} {restic_stat
 """
 
 
-def prometheus_generate_lines(metrics, repository, config_name):
-    output = _restic
+def prometheus_generate_lines(metrics, config_name):
+    basic_info = _restic
     if metrics.get('restic_pre_hooks'):
-        output += _restic_pre_hooks
+        basic_info += _restic_pre_hooks
     if metrics.get('restic_post_hooks'):
-        output += _restic_post_hooks
-    if metrics.get('restic_backup'):
-        output += _restic_backup
-    if metrics.get('restic_forget'):
-        output += _restic_forget
-    if metrics.get('restic_prune'):
-        output += _restic_prune
-    if metrics.get('restic_check'):
-        output += _restic_check
-    if metrics.get('restic_stats'):
-        output += _restic_stats
-    output += "\n\n"
-    return output.format(repository=repository, config_name=config_name, **metrics)
+        basic_info += _restic_post_hooks
+    basic_info = basic_info.format(config_name=config_name, **metrics)
+
+    routput = ""
+    for repo_name, repo_metrics in metrics.get('repositories').items():
+        output = ""
+        if repo_metrics.get('restic_backup'):
+            output += _restic_backup
+        if repo_metrics.get('restic_forget'):
+            output += _restic_forget
+        if repo_metrics.get('restic_prune'):
+            output += _restic_prune
+        if repo_metrics.get('restic_check'):
+            output += _restic_check
+        if repo_metrics.get('restic_stats'):
+            output += _restic_stats
+        routput += output.format(repository=repo_name, config_name=config_name, **repo_metrics)
+    return basic_info + routput + "\n"
+    # return output.format(repository=repository, config_name=config_name, **metrics)
 
 
 def prometheus_write_file(lines, path):
