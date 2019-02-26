@@ -15,8 +15,7 @@ class ResticRepository:
         self.repository = repository
         self.basecommand = ['restic', '-r', repository]
         self.log_metrics = log_metrics
-        if self.log_metrics:
-            self.log = {}
+        self.log = {}
         self.dry_run = dry_run
 
     def init(self):
