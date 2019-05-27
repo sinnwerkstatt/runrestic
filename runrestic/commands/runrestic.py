@@ -35,6 +35,7 @@ def parse_arguments():
                         help='Apply --dry-run where applicable (i.e.: forget)')
     parser.add_argument('-l', '--log-level', metavar='LOG_LEVEL', dest='log_level', default='info',
                         help='Choose from: critical, error, warning, info, debug. (default: info)')
+    parser.add_argument('-c', '--config', dest='config_file', help='Use an alternative configuration file')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
     args = parser.parse_args()
     return args
@@ -113,7 +114,10 @@ def main():
     log.configure_logging(args.log_level)
 
     try:
-        config_filenames = tuple(collect_config_filenames())
+        if args.config_file:
+            config_filenames = [args.config_file]
+        else:
+            config_filenames = tuple(collect_config_filenames())
 
         if len(config_filenames) == 0:
             raise ValueError('Error: No configuration files found in {}'.format(get_default_config_paths()))
