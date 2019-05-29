@@ -12,7 +12,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author='Andreas Nüßlein',
-    author_email='nuts@noova.de',
+    author_email='andreas@nuessle.in',
     url='https://github.com/andreasnuesslein/runrestic',
     classifiers=(
         'Development Status :: 4 - Beta',
@@ -36,7 +36,7 @@ setup(
     },
     install_requires=(
         'toml>=0.10.0',
-        'fastjsonschema>=2.4',
+        'jsonschema>=3.0.0',
         'setuptools',
     ),
     include_package_data=True,

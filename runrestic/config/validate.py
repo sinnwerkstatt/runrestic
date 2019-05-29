@@ -1,6 +1,6 @@
 import json
 
-import fastjsonschema
+import jsonschema
 import pkg_resources
 
 
@@ -12,4 +12,4 @@ def validate_configuration(config: dict):
     with open(schema_filename(), 'r') as schema_file:
         schema = json.load(schema_file)
 
-    fastjsonschema.validate(schema, config)
+    jsonschema.validate(schema, config)

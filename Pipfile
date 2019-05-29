@@ -5,13 +5,11 @@ name = "pypi"
 
 [packages]
 toml = "*"
-fastjsonschema = "*"
-typing = {markers="python_version < '3.5'"}
+jsonschema = "*"
 
 
 [dev-packages]
 ipdb = "*"
-keyring = "*"
 
 [requires]
 python_version = "3.6"
