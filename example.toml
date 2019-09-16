@@ -28,6 +28,7 @@ keep-last =  3
 keep-hourly =  5
 keep-weekly = 10
 keep-monthly = 30
+group-by = "host,paths"
 # https://restic.readthedocs.io/en/latest/060_forget.html#removing-snapshots-according-to-a-policy
 
 [check]

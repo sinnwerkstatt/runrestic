@@ -84,6 +84,8 @@ class ResticRepository:
         for key, value in config.items():
             if key.startswith('keep-'):
                 cmd += ['--{key}'.format(key=key), str(value)]
+            if key == 'group-by':
+                cmd += ['--group-by', value]
 
         logger.debug(" ".join(cmd))
         try:
