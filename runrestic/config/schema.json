@@ -71,7 +71,8 @@
         "keep-monthly": {"type": "integer"},
         "keep-yearly": {"type": "integer"},
         "keep-within": {"type": "integer"},
-        "keep-tag": {"type": "integer"}
+        "keep-tag": {"type": "integer"},
+        "group-by": {"type": "string"}
       }
     },
 
