@@ -70,30 +70,32 @@ restic_stats_rc{{config="{config_name}",repository="{repository}"}} {restic_stat
 
 def prometheus_generate_lines(metrics, config_name):
     basic_info = _restic
-    if metrics.get('restic_pre_hooks'):
+    if metrics.get("restic_pre_hooks"):
         basic_info += _restic_pre_hooks
-    if metrics.get('restic_post_hooks'):
+    if metrics.get("restic_post_hooks"):
         basic_info += _restic_post_hooks
     basic_info = basic_info.format(config_name=config_name, **metrics)
 
     routput = ""
-    for repo_name, repo_metrics in metrics.get('repositories').items():
+    for repo_name, repo_metrics in metrics.get("repositories").items():
         output = ""
-        if repo_metrics.get('restic_backup'):
+        if repo_metrics.get("restic_backup"):
             output += _restic_backup
-        if repo_metrics.get('restic_forget'):
+        if repo_metrics.get("restic_forget"):
             output += _restic_forget
-        if repo_metrics.get('restic_prune'):
+        if repo_metrics.get("restic_prune"):
             output += _restic_prune
-        if repo_metrics.get('restic_check'):
+        if repo_metrics.get("restic_check"):
             output += _restic_check
-        if repo_metrics.get('restic_stats'):
+        if repo_metrics.get("restic_stats"):
             output += _restic_stats
-        routput += output.format(repository=repo_name, config_name=config_name, **repo_metrics)
+        routput += output.format(
+            repository=repo_name, config_name=config_name, **repo_metrics
+        )
     return basic_info + routput + "\n"
     # return output.format(repository=repository, config_name=config_name, **metrics)
 
 
 def prometheus_write_file(lines, path):
-    with open(path, 'w') as file:
+    with open(path, "w") as file:
         file.writelines(lines)

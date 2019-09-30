@@ -8,15 +8,17 @@ logger = logging.getLogger(__name__)
 def execute_hook(config: dict, name: str):
     time_start = time.time()
 
-    commands = config.get('backup').get(name, [])
+    commands = config.get("backup").get(name, [])
 
     rcs = []
 
     for cmd in commands:
-        logger.info(' - executing hook: {cmd}'.format(cmd=cmd))
+        logger.info(" - executing hook: {cmd}".format(cmd=cmd))
 
         try:
-            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True, shell=True)
+            output = subprocess.check_output(
+                cmd, stderr=subprocess.STDOUT, universal_newlines=True, shell=True
+            )
             process_rc = 0
         except subprocess.CalledProcessError as e:
             output = e.output
@@ -24,15 +26,12 @@ def execute_hook(config: dict, name: str):
 
         logger.debug(output)
 
-        logger.info('   ' + ("✓" if process_rc == 0 else "✕"))
+        logger.info("   " + ("✓" if process_rc == 0 else "✕"))
 
-        if config['exit_on_error'] and process_rc != 0:
+        if config["exit_on_error"] and process_rc != 0:
             return process_rc
 
         rcs += [process_rc]
 
-    logs = {
-        'duration_seconds': time.time() - time_start,
-        'rc': 1 if any(rcs) else 0
-    }
+    logs = {"duration_seconds": time.time() - time_start, "rc": 1 if any(rcs) else 0}
     return logs

@@ -1,7 +1,7 @@
 import re
 
-re_bytes = re.compile('([0-9.]+) ?([a-zA-Z]*B)')
-re_time = re.compile('(?:([0-9]+):)?([0-9]+):([0-9]+)')
+re_bytes = re.compile("([0-9.]+) ?([a-zA-Z]*B)")
+re_time = re.compile("(?:([0-9]+):)?([0-9]+):([0-9]+)")
 
 
 def make_size(size: int):
@@ -20,8 +20,15 @@ def make_size(size: int):
 def parse_size(size: str):
     number, unit = re_bytes.findall(size)[0]
     units = {
-        "B": 1, "kB": 10 ** 3, "MB": 10 ** 6, "GB": 10 ** 9, "TB": 10 ** 12,
-        "KiB": 1024, "MiB": 2 ** 20, "GiB": 2 ** 30, "TiB": 2 ** 40,
+        "B": 1,
+        "kB": 10 ** 3,
+        "MB": 10 ** 6,
+        "GB": 10 ** 9,
+        "TB": 10 ** 12,
+        "KiB": 1024,
+        "MiB": 2 ** 20,
+        "GiB": 2 ** 30,
+        "TiB": 2 ** 40,
     }
     return float(number) * units[unit]
 
