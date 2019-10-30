@@ -20,6 +20,22 @@
       "uniqueItems": true
     },
 
+    "execution": {
+      "type": "object",
+      "properties": {
+        "retry_count": {"type": "integer"},
+        "retry_timeout": {"type": "string"},
+        "parallel": {
+          "type": "boolean",
+          "default": false
+        },
+        "exit_on_error": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+
     "environment": {
       "type": "object",
       "properties": {

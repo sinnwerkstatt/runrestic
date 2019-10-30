@@ -5,6 +5,11 @@ repositories = [
     "s3:s3.amazonaws.com/bucket_name"
     ]
 
+[execution]
+parallel = true
+retry_count = 10
+retry_timeout = "1h"
+
 [environment]
 RESTIC_PASSWORD = "CHANGEME"
 # or RESTIC_PASSWORD_FILE

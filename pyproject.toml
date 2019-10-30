@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "runrestic"
-version = "0.3.5"
+version = "0.5.0"
 description = "A wrapper script for Restic backup software that inits, creates, prunes and checks backups"
 license = "GPL-3.0+"
 authors = [ "Andreas Nüßlein <andreas@nuessle.in>" ]
@@ -17,7 +17,7 @@ classifiers = [
   "Topic :: System :: Archiving :: Backup",
 ]
 [tool.poetry.dependencies]
-python = "^3.4"
+python = "^3.6"
 toml = "~0.10"
 jsonschema = "~3.0"
 
@@ -25,7 +25,7 @@ jsonschema = "~3.0"
 ipdb = "*"
 
 [tool.poetry.scripts]
-runrestic = 'runrestic.commands.runrestic:main'
+runrestic = 'runrestic.main:main'
 
 
 [tool.black]
