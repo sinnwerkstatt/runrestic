@@ -40,7 +40,7 @@ def configure_signals():
     [signal.signal(sig, kill_the_group) for sig in signals]
 
 
-def main():
+def runrestic():
     args = cli_arguments()
     configure_logging(args.log_level)
     configure_signals()
@@ -67,4 +67,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    runrestic()

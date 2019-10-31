@@ -27,7 +27,7 @@ pytest = "*"
 pytest-cov = "*"
 
 [tool.poetry.scripts]
-runrestic = 'runrestic.main:main'
+runrestic = 'runrestic.runrestic.runrestic:runrestic'
 
 
 [tool.black]
