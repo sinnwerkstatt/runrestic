@@ -12,17 +12,14 @@ from runrestic.runrestic.tools import deep_update
 
 logger = logging.getLogger(__name__)
 
-CONFIG_DEFAULTS = {
-    "execution": {
-        "parallel": False,
-        "exit_on_error": True
-    }
-}
+# pragma: no cover
+CONFIG_DEFAULTS = {"execution": {"parallel": False, "exit_on_error": True}}
 SCHEMA = json.load(
-    open(pkg_resources.resource_filename("runrestic", "config/schema.json"), "r")
+    open(pkg_resources.resource_filename("runrestic", "runrestic/schema.json"), "r")
 )
 
-def cli_arguments():
+
+def cli_arguments(args: list = None):
     parser = argparse.ArgumentParser(
         prog="runrestic",
         description="""
@@ -61,8 +58,7 @@ def cli_arguments():
     parser.add_argument(
         "-v", "--version", action="version", version="%(prog)s " + __version__
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args(args)
 
 
 def possible_config_paths():
@@ -83,7 +79,7 @@ def configuration_file_paths():
         if not os.path.exists(path):
             continue
 
-        if not os.path.isdir(path):
+        if not os.path.isdir(path):  # pragma: no cover
             yield path
             continue
 

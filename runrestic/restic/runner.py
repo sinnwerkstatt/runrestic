@@ -1,11 +1,8 @@
 import argparse
-import asyncio
 import logging
 import os
-import sys
-import time
 
-from runrestic.restic.output_parsing import repo_init_check, parse_backup
+from runrestic.restic.output_parsing import parse_backup, repo_init_check
 from runrestic.restic.spawn import run_multiple_commands
 from runrestic.runrestic.tools import timethis
 
@@ -79,7 +76,7 @@ class ResticRunner:
         backup_cfg = self.config["backup"]
 
         # if backup_cfg.get("pre_hooks"):
-            # hooks.execture()
+        # hooks.execture()
 
         commands = []
         for repo in self.config["repositories"]:
@@ -115,7 +112,6 @@ class ResticRunner:
         run_multiple_commands(
             commands, parallel=self.config["execution"].get("parallel", False)
         )
-
 
     # def forget(self, config):
     #     time_start = time.time()

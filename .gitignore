@@ -5,3 +5,4 @@
 # Python
 __pycache__/
 *.egg-info/
+.coverage

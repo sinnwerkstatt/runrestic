@@ -26,7 +26,8 @@ def parse_backup(output: str) -> dict:
         r"Added to the repo:\s+(-?[0-9.]+ [a-zA-Z]*B)", output
     )[0]
     processed_files, processed_size, processed_time = re.findall(
-        r"processed ([0-9]+) files,\s+(-?[0-9.]+ [a-zA-Z]*B) in ([0-9]+:+[0-9]+)", output
+        r"processed ([0-9]+) files,\s+(-?[0-9.]+ [a-zA-Z]*B) in ([0-9]+:+[0-9]+)",
+        output,
     )[0]
 
     return {

@@ -23,6 +23,8 @@ jsonschema = "~3.0"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"
+pytest = "*"
+pytest-cov = "*"
 
 [tool.poetry.scripts]
 runrestic = 'runrestic.main:main'

@@ -2,7 +2,7 @@ import logging
 import os
 import signal
 
-from runrestic.config.configuration import (
+from runrestic.runrestic.configuration import (
     cli_arguments,
     configuration_file_paths,
     parse_configuration,

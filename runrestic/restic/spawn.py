@@ -5,7 +5,9 @@ from typing import List, Tuple
 logger = logging.getLogger(__name__)
 
 
-def run_multiple_commands(commands: List[List], parallel=False) -> List[Tuple[int, str]]:
+def run_multiple_commands(
+    commands: List[List], parallel=False
+) -> List[Tuple[int, str]]:
     processes = []
     for cmd in commands:
         logger.debug(f"Running {cmd}")
