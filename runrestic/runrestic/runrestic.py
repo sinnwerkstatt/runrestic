@@ -63,7 +63,6 @@ def runrestic():
     for config in configs:
         runner = ResticRunner(config, args)
         runner.run()
-        print(runner.times)
 
 
 if __name__ == "__main__":

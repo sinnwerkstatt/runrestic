@@ -4,7 +4,7 @@ import pty
 import sys
 from typing import List, Dict, Tuple
 
-from runrestic.restic.runner import initialize_environment
+from runrestic.restic.tools import initialize_environment
 
 logger = logging.getLogger(__name__)
 

@@ -61,6 +61,10 @@ runrestic  # without actions will do: runrestic backup prune check
 runrestic [action]
 ```
 
+# Changelog
+* v 0.5.0: **Big refactoring**. Expect breaking changes.
+    * metrics output is a bit different
+    * see new `parallel` and `retry_*` options. 
 # Autopilot
 
 If you want to run runrestic automatically, say once a day, the you can

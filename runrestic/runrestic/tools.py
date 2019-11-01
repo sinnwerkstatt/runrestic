@@ -1,5 +1,6 @@
 import re
 import time
+from collections import defaultdict
 
 re_bytes = re.compile(r"([0-9.]+) ?([a-zA-Z]*B)")
 re_time = re.compile(r"(?:([0-9]+):)?([0-9]+):([0-9]+)")
@@ -54,6 +55,21 @@ def timethis(target: dict, name: str = None):
         return wrapped_f
 
     return wrap
+
+
+class Timer:
+    start_time: float = None
+    stop_time: float = None
+
+    def __init__(self):
+        self.start_time = time.time()
+
+    def stop(self):
+        self.stop_time = time.time()
+        return self.duration()
+
+    def duration(self):
+        return self.stop_time - self.start_time
 
 
 def deep_update(base: dict, update: dict) -> dict:

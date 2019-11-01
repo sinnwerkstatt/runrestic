@@ -16,7 +16,8 @@ def repo_init_check(output: str):
     raise Exception(f"Unknown problem: {output}")
 
 
-def parse_backup(output: str) -> dict:
+def parse_backup(p_infos: dict) -> dict:
+    output = p_infos["output"]
     files_new, files_changed, files_unmodified = re.findall(
         r"Files:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified", output
     )[0]
@@ -48,15 +49,21 @@ def parse_backup(output: str) -> dict:
             "duration_seconds": parse_time(processed_time),
         },
         "added_to_repo": parse_size(added_to_the_repo),
+        "duration_seconds": p_infos["timer"].duration(),
     }
 
 
-def parse_forget(output: str) -> dict:
+def parse_forget(p_infos: dict) -> dict:
+    output = p_infos["output"]
     re_removed_snapshots = re.findall(r"remove ([0-9]+) snapshots", output)
-    return {"removed_snapshots": re_removed_snapshots[0] if re_removed_snapshots else 0}
+    return {
+        "removed_snapshots": re_removed_snapshots[0] if re_removed_snapshots else 0,
+        "duration_seconds": p_infos["timer"].duration(),
+    }
 
 
-def parse_prune(output: str) -> dict:
+def parse_prune(p_infos: dict) -> dict:
+    output = p_infos["output"]
     containing_packs_before, containing_blobs_before, containing_size_before = re.findall(
         r"repository contains ([0-9]+) packs \(([0-9]+) blobs\) with (-?[0-9.]+ ?[a-zA-Z]*B)",
         output,
@@ -90,11 +97,15 @@ def parse_prune(output: str) -> dict:
         "rewritten_packs": rewritten_packs,
         "size_freed_bytes": parse_size(size_freed),
         "removed_index_files": removed_index_files,
+        "duration_seconds": p_infos["timer"].duration(),
     }
 
 
-def parse_stats(output: str) -> dict:
+def parse_stats(p_infos: dict) -> dict:
+    output = p_infos["output"]
+
     stats_json = json.loads(output)
+    stats_json["duration_seconds"] = p_infos["timer"].duration()
     logger.debug(
         f"Total File Count: {stats_json['total_file_count']}\n"
         f"Total Size: {make_size(stats_json['total_size'])}"

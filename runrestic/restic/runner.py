@@ -1,7 +1,8 @@
 import argparse
+import json
 import logging
-import os
-from typing import Dict
+from collections import defaultdict
+from datetime import datetime
 
 from runrestic.restic.output_parsing import (
     parse_backup,
@@ -10,39 +11,30 @@ from runrestic.restic.output_parsing import (
     parse_stats,
     repo_init_check,
 )
-from runrestic.restic.spawn import run_multiple_commands
-from runrestic.runrestic.tools import timethis
+from runrestic.restic.tools import initialize_environment, run_multiple_commands
+from runrestic.runrestic.tools import Timer
 
 logger = logging.getLogger(__name__)
 
 
-def initialize_environment(config: dict):
-    for key, value in config.items():
-        logger.debug(f"[Environment] {key}={value}")
-        os.environ[key] = value
-
-    if not (os.environ.get("HOME") or os.environ.get("XDG_CACHE_HOME")):
-        os.environ["XDG_CACHE_HOME"] = "/var/cache"
+def recursive_dict():
+    return defaultdict(recursive_dict)
 
 
 class ResticRunner:
-    times: Dict[str, int] = {}
-
     def __init__(self, config: dict, args: argparse.Namespace):
         self.config = config
         self.args = args
-        self.log_metrics = (
-            config.get("metrics") and not args.dry_run and not args.actions == ["init"]
-        )
-        if self.log_metrics:
-            self.metrics: Dict[str, dict] = {
-                repo: {} for repo in config["repositories"]
-            }
+
+        self.repos = self.config["repositories"]
+
+        self.metrics = {}
+        self.log_metrics = config.get("metrics") and not args.dry_run
 
         initialize_environment(self.config["environment"])
 
-    @timethis(times, name="total")
     def run(self):
+        timer = Timer()
         actions = self.args.actions
 
         if not actions and self.log_metrics:
@@ -58,126 +50,126 @@ class ResticRunner:
             if action == "prune":
                 self.forget()
                 self.prune()
-            if action == "check":
-                self.check()
+            # TODO!
+            # if action == "check":
+            #     self.check()
             if action == "stats":
                 self.stats()
             if action == "unlock":
                 self.unlock()
 
-        print(self.metrics)
-        # if log_metrics:
-        #     logs["last_run"] = datetime.now().timestamp()
-        #     logs["total_duration_seconds"] = time.time() - total_time
-        #     write_lines(logs, config["name"], config.get("metrics"))
+        self.metrics["last_run"] = datetime.now().timestamp()
+        self.metrics["total_duration_seconds"] = timer.stop()
+        print(json.dumps(self.metrics, indent=2))
 
-    @timethis(times)
+        if self.log_metrics:
+            # write_metrics(self.metrics, self.config)
+            pass
+
     def init(self):
-        commands = [
-            (repo, ["restic", "-r", repo, "init"])
-            for repo in self.config["repositories"]
-        ]
-        outputs = run_multiple_commands(commands, config=self.config["execution"])
+        commands = [(repo, ["restic", "-r", repo, "init"]) for repo in self.repos]
 
-        for repo, returncode, output in outputs:
-            if returncode > 0:
-                logger.warning(output)
+        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
+
+        for repo, p_infos in cmd_runs.items():
+            if p_infos["returncode"] > 0:
+                logger.warning(p_infos["output"])
             else:
-                logger.info(output)
+                logger.info(p_infos["output"])
 
-    @timethis(times)
     def backup(self):
+        metrics = self.metrics["backup"] = {}
         backup_cfg = self.config["backup"]
 
+        # backup pre_hooks
         if backup_cfg.get("pre_hooks"):
-            commands = self.config["backup"].get("pre_hooks", [])
-            outputs = run_multiple_commands(
-                commands, config={"parallel": False, "shell": True}
+            cmd_runs = run_multiple_commands(
+                backup_cfg["pre_hooks"], config={"parallel": False, "shell": True}
             )
+            metrics["_restic_pre_hooks"] = {
+                "duration_seconds": sum(
+                    [v["timer"].duration() for v in cmd_runs.values()]
+                )
+            }
 
-        commands = []
-        for repo in self.config["repositories"]:
-            cmd = ["restic", "-r", repo, "backup"] + backup_cfg.get("sources")
-            for exclude_pattern in backup_cfg.get("exclude_patterns", []):
-                cmd += ["--exclude", exclude_pattern]
-            for exclude_file in backup_cfg.get("exclude_files", []):
-                cmd += ["--exclude-file", exclude_file]
-            commands += [(repo, cmd)]
-        outputs = run_multiple_commands(commands, config=self.config["execution"])
-        for repo, returncode, output in outputs:
-            if returncode > 0:
-                repo_init_check(output)
-                continue
-            if self.log_metrics:
-                self.metrics[repo]["restic_backup"] = parse_backup(output)
-            # if self.log_metrics:
-            #     self.log["restic_backup"]["duration_seconds"] = time.time() - time_start
-            #     self.log["restic_backup"]["rc"] = process_rc
+        # actual backup
+        extra_args = []
+        for exclude_pattern in backup_cfg.get("exclude_patterns", []):
+            extra_args += ["--exclude", exclude_pattern]
+        for exclude_file in backup_cfg.get("exclude_files", []):
+            extra_args += ["--exclude-file", exclude_file]
 
-        if backup_cfg.get("post_hooks"):
-            commands = self.config["backup"].get("post_hooks", [])
-            outputs = run_multiple_commands(
-                commands, config={"parallel": False, "shell": True}
-            )
-
-    @timethis(times)
-    def unlock(self):
         commands = [
-            (repo, ["restic", "-r", repo, "unlock"])
-            for repo in self.config["repositories"]
+            (
+                repo,
+                (
+                    ["restic", "-r", repo, "backup"]
+                    + backup_cfg.get("sources")
+                    + extra_args
+                ),
+            )
+            for repo in self.repos
         ]
+
+        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
+
+        for repo, p_infos in cmd_runs.items():
+            if p_infos["returncode"] > 0:
+                repo_init_check(p_infos["output"])
+                continue
+            metrics[repo] = parse_backup(p_infos)
+
+        # backup post_hooks
+        if backup_cfg.get("post_hooks"):
+            cmd_runs = run_multiple_commands(
+                backup_cfg["post_hooks"], config={"parallel": False, "shell": True}
+            )
+            metrics["_restic_post_hooks"] = {
+                "duration_seconds": sum(
+                    [v["timer"].duration() for v in cmd_runs.values()]
+                )
+            }
+
+    def unlock(self):
+        commands = [(repo, ["restic", "-r", repo, "unlock"]) for repo in self.repos]
 
         run_multiple_commands(commands, config=self.config["execution"])
 
-    @timethis(times)
     def forget(self):
-        commands = []
-        for repo in self.config["repositories"]:
-            cmd = ["restic", "-r", repo, "forget"]
-            if self.args.dry_run:
-                cmd += ["--dry-run"]
+        metrics = self.metrics["forget"] = {}
 
-            for key, value in self.config["prune"].items():
-                if key.startswith("keep-"):
-                    cmd += ["--{key}".format(key=key), str(value)]
-                if key == "group-by":
-                    cmd += ["--group-by", value]
+        extra_args = []
+        if self.args.dry_run:
+            extra_args += ["--dry-run"]
+        for key, value in self.config["prune"].items():
+            if key.startswith("keep-"):
+                extra_args += ["--{key}".format(key=key), str(value)]
+            if key == "group-by":
+                extra_args += ["--group-by", value]
 
-            commands += [(repo, cmd)]
+        commands = [(repo, ["restic", "-r", repo, "forget"]) for repo in self.repos]
 
-        outputs = run_multiple_commands(commands, config=self.config["execution"])
-        for repo, returncode, output in outputs:
-            if returncode > 0:
-                repo_init_check(output)
+        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
+
+        for repo, p_infos in cmd_runs.items():
+            if p_infos["returncode"] > 0:
+                repo_init_check(p_infos["output"])
                 continue
-            metrics = parse_forget(output)
-            print(metrics)
+            metrics[repo] = parse_forget(p_infos)
 
-        # if self.log_metrics:
-        #     self.log["restic_forget"] = parse_forget(output)
-        #     self.log["restic_forget"]["duration_seconds"] = time.time() - time_start
-        #     self.log["restic_forget"]["rc"] = process_rc
-
-    @timethis(times)
     def prune(self):
-        commands = [
-            (repo, ["restic", "-r", repo, "prune"])
-            for repo in self.config["repositories"]
-        ]
+        metrics = self.metrics["prune"] = {}
 
-        outputs = run_multiple_commands(commands, config=self.config["execution"])
-        for repo, returncode, output in outputs:
-            if returncode > 0:
-                repo_init_check(output)
+        commands = [(repo, ["restic", "-r", repo, "prune"]) for repo in self.repos]
+
+        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
+
+        for repo, p_infos in cmd_runs.items():
+            if p_infos["returncode"] > 0:
+                repo_init_check(p_infos["output"])
                 continue
-            metrics = parse_prune(output)
-            print(metrics)
-        # if self.log_metrics:
-        #     self.log["restic_prune"] = parse_prune(output)
-        #     self.log["restic_prune"]["duration_seconds"] = time.time() - time_start
-        #     self.log["restic_prune"]["rc"] = process_rc
+            metrics[repo] = parse_prune(p_infos)
 
-    # @timethis(times)
     # def check(self, consistency):
     #     cmd = self.basecommand + ["check"]
     #
@@ -221,24 +213,19 @@ class ResticRunner:
     #         self.log["restic_check"] = metrics
     #         self.log["restic_check"]["duration_seconds"] = time.time() - time_start
     #         self.log["restic_check"]["rc"] = process_rc
-    #
 
-    @timethis(times)
     def stats(self):
+        metrics = self.metrics["stats"] = {}
+
         commands = [
             (repo, ["restic", "-r", repo, "stats", "-q", "--json"])
-            for repo in self.config["repositories"]
+            for repo in self.repos
         ]
 
-        outputs = run_multiple_commands(commands, config=self.config["execution"])
+        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
 
-        for repo, returncode, output in outputs:
-            if returncode > 0:
-                repo_init_check(output)
+        for repo, p_infos in cmd_runs.items():
+            if p_infos["returncode"] > 0:
+                repo_init_check(p_infos["output"])
                 continue
-            if self.log_metrics:
-                self.metrics[repo]["restic_stats"] = parse_stats(output)
-        #     if self.log_metrics:
-        #         self.log["restic_stats"]["duration_seconds"] = time.time() - time_start
-        #         self.log["restic_stats"]["rc"] = process_rc
-        #
+            metrics[repo] = parse_stats(p_infos)
