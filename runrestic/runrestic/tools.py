@@ -1,22 +1,20 @@
 import re
 import time
-from collections import Mapping
 
 re_bytes = re.compile(r"([0-9.]+) ?([a-zA-Z]*B)")
 re_time = re.compile(r"(?:([0-9]+):)?([0-9]+):([0-9]+)")
 
 
 def make_size(size: int) -> str:
-    size = float(size)
     if size > 1 << 40:
-        return "{:.2f} TiB".format(size / (1 << 40))
+        return f"{size / (1 << 40):.2f} TiB"
     if size > 1 << 30:
-        return "{:.2f} GiB".format(size / (1 << 30))
+        return f"{size / (1 << 30):.2f} GiB"
     if size > 1 << 20:
-        return "{:.2f} MiB".format(size / (1 << 20))
+        return f"{size / (1 << 20):.2f} MiB"
     if size > 1 << 10:
-        return "{:.2f} KiB".format(size / (1 << 10))
-    return "{:.0f} B".format(size)
+        return f"{size / (1 << 10):.2f} KiB"
+    return f"{size:.0f} B"
 
 
 def parse_size(size: str) -> float:
@@ -58,13 +56,13 @@ def timethis(target: dict, name: str = None):
     return wrap
 
 
-def deep_update(base: dict, update: Mapping) -> dict:
+def deep_update(base: dict, update: dict) -> dict:
     new = base.copy()
     for key, value in update.items():
         base_value = new.get(key, {})
-        if not isinstance(base_value, Mapping):
+        if not isinstance(base_value, dict):
             new[key] = value
-        elif isinstance(value, Mapping):
+        elif isinstance(value, dict):
             new[key] = deep_update(base_value, value)
         else:
             new[key] = value

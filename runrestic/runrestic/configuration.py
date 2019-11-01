@@ -12,7 +12,6 @@ from runrestic.runrestic.tools import deep_update
 
 logger = logging.getLogger(__name__)
 
-# pragma: no cover
 CONFIG_DEFAULTS = {"execution": {"parallel": False, "exit_on_error": True}}
 SCHEMA = json.load(
     open(pkg_resources.resource_filename("runrestic", "runrestic/schema.json"), "r")

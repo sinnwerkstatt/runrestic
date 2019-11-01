@@ -17,7 +17,7 @@ def test_make_size():
     assert make_size(1000000000) == "953.67 MiB"
     assert make_size(1000000000000) == "931.32 GiB"
     assert make_size(1000000000000000) == "909.49 TiB"
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         make_size("string")
 
 

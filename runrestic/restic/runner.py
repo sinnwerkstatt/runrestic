@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+from typing import Dict
 
 from runrestic.restic.output_parsing import (
     parse_backup,
@@ -25,7 +26,7 @@ def initialize_environment(config: dict):
 
 
 class ResticRunner:
-    times = {}
+    times: Dict[str, int] = {}
 
     def __init__(self, config: dict, args: argparse.Namespace):
         self.config = config
@@ -34,9 +35,11 @@ class ResticRunner:
             config.get("metrics") and not args.dry_run and not args.actions == ["init"]
         )
         if self.log_metrics:
-            self.metrics = {repo: {} for repo in config["repositories"]}
+            self.metrics: Dict[str, dict] = {
+                repo: {} for repo in config["repositories"]
+            }
 
-        initialize_environment(self.config.get("environment"))
+        initialize_environment(self.config["environment"])
 
     @timethis(times, name="total")
     def run(self):
