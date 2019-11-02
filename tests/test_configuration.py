@@ -74,6 +74,7 @@ def test_configuration_file_paths(restic_minimal_good_conf):
 def test_configuration_file_paths_wrong_perms(caplog, restic_dir):
     bad_perms_file = restic_dir.join("example.toml")
     bad_perms_file.write("irrelevant")
+    os.chmod(bad_perms_file, 0o0644)
     paths = list(configuration_file_paths())
     assert paths == []
     assert f"NOT using {bad_perms_file}." in caplog.text

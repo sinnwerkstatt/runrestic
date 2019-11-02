@@ -3,6 +3,7 @@ import json
 import logging
 from collections import defaultdict
 from datetime import datetime
+from typing import Dict, Any
 
 from runrestic.restic.output_parsing import (
     parse_backup,
@@ -28,7 +29,7 @@ class ResticRunner:
 
         self.repos = self.config["repositories"]
 
-        self.metrics = {}
+        self.metrics: Dict[str, Any] = {}
         self.log_metrics = config.get("metrics") and not args.dry_run
 
         initialize_environment(self.config["environment"])

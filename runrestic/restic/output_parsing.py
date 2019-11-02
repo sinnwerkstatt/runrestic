@@ -64,12 +64,10 @@ def parse_forget(p_infos: dict) -> dict:
 
 def parse_prune(p_infos: dict) -> dict:
     output = p_infos["output"]
-    containing_packs_before, containing_blobs_before, containing_size_before = re.findall(
+    containing_packs, containing_blobs, containing_size = re.findall(
         r"repository contains ([0-9]+) packs \(([0-9]+) blobs\) with (-?[0-9.]+ ?[a-zA-Z]*B)",
         output,
-    )[
-        0
-    ]
+    )[0]
     duplicate_blobs, duplicate_size = re.findall(
         r"([0-9]+) duplicate blobs, (-?[0-9.]+ ?[a-zA-Z]*B) duplicate", output
     )[0]
@@ -85,9 +83,9 @@ def parse_prune(p_infos: dict) -> dict:
     removed_index_files = re.findall(r"remove ([0-9]+) old index files", output)[0]
 
     return {
-        "containing_packs_before": containing_packs_before,
-        "containing_blobs": containing_blobs_before,
-        "containing_size_bytes": parse_size(containing_size_before),
+        "containing_packs_before": containing_packs,
+        "containing_blobs": containing_blobs,
+        "containing_size_bytes": parse_size(containing_size),
         "duplicate_blobs": duplicate_blobs,
         "duplicate_size_bytes": parse_size(duplicate_size),
         "in_use_blobs": in_use_blobs,
