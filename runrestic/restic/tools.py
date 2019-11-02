@@ -8,9 +8,7 @@ from runrestic.runrestic.tools import Timer
 logger = logging.getLogger(__name__)
 
 
-def run_multiple_commands(
-    commands: list, config: dict = None
-) -> dict:
+def run_multiple_commands(commands: list, config: dict = None) -> dict:
     if not config:
         config = {}
     shell = config.get("shell", False)
@@ -20,11 +18,11 @@ def run_multiple_commands(
     i = 0
     for command in commands:
         if isinstance(command, tuple):
-            cmd_id: str = command[0]
-            cmd: list = command[1]
+            cmd_id = command[0]
+            cmd = command[1]
         else:
-            cmd_id: int = i
-            cmd: list = command
+            cmd_id = i
+            cmd = command
 
         logger.debug(f'Spawning "{cmd}"')
         timer = Timer()

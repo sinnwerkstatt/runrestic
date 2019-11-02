@@ -58,8 +58,8 @@ def timethis(target: dict, name: str = None):
 
 
 class Timer:
-    start_time: float = None
-    stop_time: float = None
+    start_time: float
+    stop_time: float
 
     def __init__(self):
         self.start_time = time.time()

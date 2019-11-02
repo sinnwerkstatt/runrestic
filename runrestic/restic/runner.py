@@ -60,7 +60,8 @@ class ResticRunner:
 
         self.metrics["last_run"] = datetime.now().timestamp()
         self.metrics["total_duration_seconds"] = timer.stop()
-        print(json.dumps(self.metrics, indent=2))
+
+        logger.debug(json.dumps(self.metrics, indent=2))
 
         if self.log_metrics:
             # write_metrics(self.metrics, self.config)

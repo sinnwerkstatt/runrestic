@@ -23,6 +23,8 @@ jsonschema = "~3.0"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"
+black = { version = "*", allows-prereleases = true }
+mypy = "*"
 pytest = "*"
 pytest-cov = "*"
 
