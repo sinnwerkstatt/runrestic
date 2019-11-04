@@ -1,6 +1,11 @@
+[tool.dephell.main]
+from = {format = "poetry", path = "pyproject.toml"}
+to = {format = "setuppy", path = "setup.py"}
+versioning = "semver"
+
 [tool.poetry]
 name = "runrestic"
-version = "0.3.5"
+version = "0.3.6"
 description = "A wrapper script for Restic backup software that inits, creates, prunes and checks backups"
 license = "GPL-3.0+"
 authors = [ "Andreas Nüßlein <andreas@nuessle.in>" ]
