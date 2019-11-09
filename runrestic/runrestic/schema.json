@@ -24,7 +24,7 @@
       "type": "object",
       "properties": {
         "retry_count": {"type": "integer"},
-        "retry_timeout": {"type": "string"},
+        "retry_backoff": {"type": "string"},
         "parallel": {
           "type": "boolean",
           "default": false

@@ -1,9 +1,10 @@
 import argparse
 import json
 import logging
+import time
 from collections import defaultdict
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any, Dict
 
 from runrestic.restic.output_parsing import (
     parse_backup,
@@ -13,7 +14,6 @@ from runrestic.restic.output_parsing import (
     repo_init_check,
 )
 from runrestic.restic.tools import initialize_environment, run_multiple_commands
-from runrestic.runrestic.tools import Timer
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class ResticRunner:
         initialize_environment(self.config["environment"])
 
     def run(self):
-        timer = Timer()
+        start_time = time.time()
         actions = self.args.actions
 
         if not actions and self.log_metrics:
@@ -60,7 +60,7 @@ class ResticRunner:
                 self.unlock()
 
         self.metrics["last_run"] = datetime.now().timestamp()
-        self.metrics["total_duration_seconds"] = timer.stop()
+        self.metrics["total_duration_seconds"] = time.time() - start_time
 
         logger.debug(json.dumps(self.metrics, indent=2))
 
@@ -74,7 +74,7 @@ class ResticRunner:
         cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
 
         for repo, p_infos in cmd_runs.items():
-            if p_infos["returncode"] > 0:
+            if p_infos["output"][-1][0] > 0:
                 logger.warning(p_infos["output"])
             else:
                 logger.info(p_infos["output"])
@@ -106,8 +106,8 @@ class ResticRunner:
                 repo,
                 (
                     ["restic", "-r", repo, "backup"]
-                    + backup_cfg.get("sources")
                     + extra_args
+                    + backup_cfg.get("sources")
                 ),
             )
             for repo in self.repos
@@ -149,7 +149,9 @@ class ResticRunner:
             if key == "group-by":
                 extra_args += ["--group-by", value]
 
-        commands = [(repo, ["restic", "-r", repo, "forget"]) for repo in self.repos]
+        commands = [
+            (repo, ["restic", "-r", repo, "forget"] + extra_args) for repo in self.repos
+        ]
 
         cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
 
@@ -172,49 +174,48 @@ class ResticRunner:
                 continue
             metrics[repo] = parse_prune(p_infos)
 
-    # def check(self, consistency):
-    #     cmd = self.basecommand + ["check"]
-    #
-    #     metrics = {
-    #         "errors": 0,
-    #         "errors_data": 0,
-    #         "errors_snapshots": 0,
-    #         "read_data": 0,
-    #         "check_unused": 0,
-    #     }
-    #
-    #     if consistency and "checks" in consistency:
-    #         if "check-unused" in consistency.get("checks"):
-    #             cmd += ["--check-unused"]
-    #             metrics["check_unused"] = 1
-    #
-    #         if "read-data" in consistency.get("checks"):
-    #             cmd += ["--read-data"]
-    #             metrics["read_data"] = 1
-    #
-    #     logger.debug(" ".join(cmd))
-    #     try:
-    #         output = subprocess.check_output(
-    #             cmd, stderr=subprocess.STDOUT, universal_newlines=True
-    #         )
-    #         process_rc = 1 if "error:" in output else 0
-    #         logger.debug(output)
-    #     except subprocess.CalledProcessError as e:
-    #         self._repo_init_check(e)
-    #         output = e.output
-    #         process_rc = e.returncode
-    #         logger.error(output)
-    #
-    #         metrics["errors"] = 1
-    #         if "error: load <snapshot/" in output:
-    #             metrics["errors_snapshots"] = 1
-    #         if "Pack ID does not match," in output:
-    #             metrics["errors_data"] = 1
-    #
-    #     if self.log_metrics:
-    #         self.log["restic_check"] = metrics
-    #         self.log["restic_check"]["duration_seconds"] = time.time() - time_start
-    #         self.log["restic_check"]["rc"] = process_rc
+    def check(self):
+        check_cfg = self.config.get("check")
+        metrics = {
+            "errors": 0,
+            "errors_data": 0,
+            "errors_snapshots": 0,
+            "read_data": 0,
+            "check_unused": 0,
+        }
+
+        extra_args = []
+        if check_cfg and "checks" in check_cfg:
+            checks = check_cfg["checks"]
+            if "check-unused" in checks:
+                extra_args += ["--check-unused"]
+                metrics["check_unused"] = 1
+            if "read-data" in checks:
+                extra_args += ["--read-data"]
+                metrics["read_data"] = 1
+
+        commands = [
+            (repo, ["restic", "-r", repo, "check"] + extra_args) for repo in self.repos
+        ]
+
+        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
+
+        for repo, p_infos in cmd_runs.items():
+            if p_infos["returncode"] > 0:
+                repo_init_check(p_infos["output"])
+                continue
+            metrics[repo] = parse_check(p_infos)
+
+        #     metrics["errors"] = 1
+        #     if "error: load <snapshot/" in output:
+        #         metrics["errors_snapshots"] = 1
+        #     if "Pack ID does not match," in output:
+        #         metrics["errors_data"] = 1
+        #
+        # if self.log_metrics:
+        #     self.log["restic_check"] = metrics
+        #     self.log["restic_check"]["duration_seconds"] = time.time() - time_start
+        #     self.log["restic_check"]["rc"] = process_rc
 
     def stats(self):
         metrics = self.metrics["stats"] = {}

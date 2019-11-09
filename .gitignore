@@ -5,6 +5,6 @@
 # Python
 __pycache__/
 *.egg-info/
-.coverage
+.coverage*
 .mypy_cache/
 .pytest_cache/

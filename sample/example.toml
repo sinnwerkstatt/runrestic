@@ -8,7 +8,11 @@ repositories = [
 [execution]
 parallel = true
 retry_count = 10
-retry_timeout = "1h"
+retry_backoff = "1:00 exponential"  # 00:00 = min:sec; 00:00:00 = hour:min:sec
+# strategies:
+#  - static (same duration every try)
+#  - linear (duration * retry number)
+#  - exponential
 
 [environment]
 RESTIC_PASSWORD = "CHANGEME"

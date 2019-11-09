@@ -1,9 +1,5 @@
 import re
 import time
-from collections import defaultdict
-
-re_bytes = re.compile(r"([0-9.]+) ?([a-zA-Z]*B)")
-re_time = re.compile(r"(?:([0-9]+):)?([0-9]+):([0-9]+)")
 
 
 def make_size(size: int) -> str:
@@ -19,6 +15,7 @@ def make_size(size: int) -> str:
 
 
 def parse_size(size: str) -> float:
+    re_bytes = re.compile(r"([0-9.]+) ?([a-zA-Z]*B)")
     number, unit = re_bytes.findall(size)[0]
     units = {
         "B": 1,
@@ -35,6 +32,7 @@ def parse_size(size: str) -> float:
 
 
 def parse_time(time_str: str) -> int:
+    re_time = re.compile(r"(?:([0-9]+):)?([0-9]+):([0-9]+)")
     hours, minutes, seconds = (int(x) if x else 0 for x in re_time.findall(time_str)[0])
     if minutes:
         seconds += minutes * 60
@@ -55,21 +53,6 @@ def timethis(target: dict, name: str = None):
         return wrapped_f
 
     return wrap
-
-
-class Timer:
-    start_time: float
-    stop_time: float
-
-    def __init__(self):
-        self.start_time = time.time()
-
-    def stop(self):
-        self.stop_time = time.time()
-        return self.duration()
-
-    def duration(self):
-        return self.stop_time - self.start_time
 
 
 def deep_update(base: dict, update: dict) -> dict:

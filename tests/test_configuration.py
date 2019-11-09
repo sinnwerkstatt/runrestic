@@ -86,7 +86,7 @@ def test_parse_configuration_good_conf(restic_minimal_good_conf):
         "name": "example.toml",
         "repositories": ["/tmp/restic-repo-1"],
         "environment": {"RESTIC_PASSWORD": "CHANGEME"},
-        "execution": {"exit_on_error": True, "parallel": False},
+        "execution": {"exit_on_error": True, "parallel": False, "retry_count": 0},
         "backup": {"sources": ["/etc"]},
         "prune": {"keep-last": 10},
     }
