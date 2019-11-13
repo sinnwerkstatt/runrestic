@@ -1,4 +1,10 @@
-# Overview
+![Travis (.com)](https://img.shields.io/travis/com/andreasnuesslein/runrestic)
+![PyPI](https://img.shields.io/pypi/v/runrestic)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/runrestic)
+![python version](https://img.shields.io/badge/python-3.6+-blue.svg)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+# Runrestic
 
 runrestic is a simple Python wrapper script for the
 [Restic](https://restic.net/) backup software that initiates a backup,
@@ -7,7 +13,7 @@ for consistency. The script supports specifying your settings in a declarative
 configuration file rather than having to put them all on the command-line, and
 handles common errors.
 
-Here's an example config file:
+## Example config
 
 ```toml
 repositories = [
@@ -30,13 +36,14 @@ keep-last =  3
 keep-hourly =  5
 ```
 
-For a more comprehensive example see the [example.toml](https://github.com/andreasnuesslein/runrestic/blob/master/example.toml) or check the [schema.json](https://github.com/andreasnuesslein/runrestic/blob/master/runrestic/config/schema.json)
+For a more comprehensive example see the [example.toml](https://github.com/andreasnuesslein/runrestic/blob/master/sample/example.toml)
+ or check the [schema.json](https://github.com/andreasnuesslein/runrestic/blob/master/runrestic/runrestic/schema.json)
 
-# Getting started
+## Getting started
 
 To get up and running, first [install Restic](https://restic.net/#installation). 
 
-To install runrestic, run the following command to download and install it:
+To install **runrestic**, run the following command to download and install it:
 
 ```bash
 sudo pip3 install --upgrade runrestic
@@ -61,10 +68,15 @@ runrestic  # without actions will do: runrestic backup prune check
 runrestic [action]
 ```
 
+## Grafana
+@d-matt created a nice dashboard for Grafana here: https://grafana.com/grafana/dashboards/11064/revisions
+
 # Changelog
 * v 0.5.0: **Big refactoring**. Expect breaking changes.
     * metrics output is a bit different
     * see new `parallel` and `retry_*` options. 
+
+
 # Autopilot
 
 If you want to run runrestic automatically, say once a day, the you can

@@ -2,14 +2,15 @@ import logging
 import os
 import signal
 
+from runrestic.restic.installer import restic_check
+from runrestic.restic.runner import ResticRunner
+from runrestic.restic.shell import restic_shell
 from runrestic.runrestic.configuration import (
     cli_arguments,
     configuration_file_paths,
     parse_configuration,
     possible_config_paths,
 )
-from runrestic.restic.runner import ResticRunner
-from runrestic.restic.shell import restic_shell
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,9 @@ def configure_signals():
 
 
 def runrestic():
+    if not restic_check():
+        return
+
     args = cli_arguments()
     configure_logging(args.log_level)
     configure_signals()
