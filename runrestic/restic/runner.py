@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any, Dict
 
+from runrestic.metrics import write_metrics
 from runrestic.restic.output_parsing import (
     parse_backup,
     parse_forget,
@@ -59,8 +60,7 @@ class ResticRunner:
         logger.debug(json.dumps(self.metrics, indent=2))
 
         if self.log_metrics:
-            # write_metrics(self.metrics, self.config)
-            pass
+            write_metrics(self.metrics, self.config)
 
     def init(self):
         commands = [(repo, ["restic", "-r", repo, "init"]) for repo in self.repos]
@@ -87,7 +87,8 @@ class ResticRunner:
         if cfg.get("pre_hooks"):
             cmd_runs = MultiCommand(cfg["pre_hooks"], config=hooks_cfg).run()
             metrics["_restic_pre_hooks"] = {
-                "duration_seconds": sum([v["time"] for v in cmd_runs.values()])
+                "duration_seconds": sum([v["time"] for v in cmd_runs.values()]),
+                "rc": sum(x["output"][-1][0] for x in cmd_runs.values()),
             }
 
         # actual backup
@@ -116,7 +117,8 @@ class ResticRunner:
         if cfg.get("post_hooks"):
             cmd_runs = MultiCommand(cfg["post_hooks"], config=hooks_cfg).run()
             metrics["_restic_post_hooks"] = {
-                "duration_seconds": sum([v["time"] for v in cmd_runs.values()])
+                "duration_seconds": sum([v["time"] for v in cmd_runs.values()]),
+                "rc": sum(x["output"][-1][0] for x in cmd_runs.values()),
             }
 
     def unlock(self):
@@ -191,15 +193,17 @@ class ResticRunner:
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
         for repo, process_infos in cmd_runs.items():
-            if process_infos["output"][-1][0] > 0:
+            rc, output = process_infos["output"][-1]
+            if rc > 0:
                 logger.warning(process_infos["output"])
-                output = process_infos["output"][-1][1]
+            if "error: load <snapshot/" in output:
+                metrics["errors_snapshots"] = 1
                 metrics["errors"] = 1
-                if "error: load <snapshot/" in output:
-                    metrics["errors_snapshots"] = 1
-                if "Pack ID does not match," in output:
-                    metrics["errors_data"] = 1
+            if "Pack ID does not match," in output:
+                metrics["errors_data"] = 1
+                metrics["errors"] = 1
             metrics["duration_seconds"] = process_infos["time"]
+            metrics["rc"] = rc
             self.metrics["check"][repo] = metrics
 
     def stats(self):

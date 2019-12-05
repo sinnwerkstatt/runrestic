@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_backup(process_infos: dict) -> dict:
-    output = process_infos["output"][-1][1]
+    rc, output = process_infos["output"][-1]
     files_new, files_changed, files_unmodified = re.findall(
         r"Files:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified", output
     )[0]
@@ -41,20 +41,22 @@ def parse_backup(process_infos: dict) -> dict:
         },
         "added_to_repo": parse_size(added_to_the_repo),
         "duration_seconds": process_infos["time"],
+        "rc": rc,
     }
 
 
 def parse_forget(process_infos: dict) -> dict:
-    output = process_infos["output"][-1][1]
+    rc, output = process_infos["output"][-1]
     re_removed_snapshots = re.findall(r"remove ([0-9]+) snapshots", output)
     return {
         "removed_snapshots": re_removed_snapshots[0] if re_removed_snapshots else 0,
         "duration_seconds": process_infos["time"],
+        "rc": rc,
     }
 
 
 def parse_prune(process_infos: dict) -> dict:
-    output = process_infos["output"][-1][1]
+    rc, output = process_infos["output"][-1]
     containing_packs, containing_blobs, containing_size = re.findall(
         r"repository contains ([0-9]+) packs \(([0-9]+) blobs\) with (-?[0-9.]+ ?[a-zA-Z]*B)",
         output,
@@ -87,14 +89,16 @@ def parse_prune(process_infos: dict) -> dict:
         "size_freed_bytes": parse_size(size_freed),
         "removed_index_files": removed_index_files,
         "duration_seconds": process_infos["time"],
+        "rc": rc,
     }
 
 
 def parse_stats(process_infos: dict) -> dict:
-    output = process_infos["output"][-1][1]
+    rc, output = process_infos["output"][-1]
     stats_json = json.loads(output)
     return {
-        "total_size_bytes": stats_json["total_size"],
         "total_file_count": stats_json["total_file_count"],
+        "total_size_bytes": stats_json["total_size"],
         "duration_seconds": process_infos["time"],
+        "rc": rc,
     }

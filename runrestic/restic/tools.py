@@ -2,7 +2,6 @@ import logging
 import os
 import time
 from multiprocessing.pool import ApplyResult, Pool
-from multiprocessing import Process
 from subprocess import PIPE, Popen, STDOUT
 from typing import Dict
 
