@@ -16,6 +16,7 @@ classifiers = [
   "Topic :: Security :: Cryptography",
   "Topic :: System :: Archiving :: Backup",
 ]
+
 [tool.poetry.dependencies]
 python = "^3.6"
 toml = "~0.10"
