@@ -1,5 +1,4 @@
 import re
-import time
 
 
 def make_size(size: int) -> str:
@@ -41,18 +40,18 @@ def parse_time(time_str: str) -> int:
     return seconds
 
 
-def timethis(target: dict, name: str = None):
-    def wrap(f):
-        def wrapped_f(*args):
-            start_time = time.time()
-            ret = f(*args)
-            end_time = time.time()
-            target[name or f.__name__] = end_time - start_time
-            return ret
-
-        return wrapped_f
-
-    return wrap
+# def timethis(target: dict, name: str = None):
+#     def wrap(f):
+#         def wrapped_f(*args):
+#             start_time = time.time()
+#             ret = f(*args)
+#             end_time = time.time()
+#             target[name or f.__name__] = end_time - start_time
+#             return ret
+#
+#         return wrapped_f
+#
+#     return wrap
 
 
 def deep_update(base: dict, update: dict) -> dict:

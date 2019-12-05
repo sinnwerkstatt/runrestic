@@ -7,17 +7,8 @@ from runrestic.runrestic.tools import parse_size, parse_time, make_size
 logger = logging.getLogger(__name__)
 
 
-def repo_init_check(output: str):
-    if "Is there a repository at the following location?" in output:
-        logger.error(
-            "\nIt seems like the repo is not initialized. Run `runrestic init`."
-        )
-        return
-    raise Exception(f"Unknown problem: {output}")
-
-
-def parse_backup(p_infos: dict) -> dict:
-    output = p_infos["output"]
+def parse_backup(process_infos: dict) -> dict:
+    output = process_infos["output"][-1][1]
     files_new, files_changed, files_unmodified = re.findall(
         r"Files:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified", output
     )[0]
@@ -49,21 +40,21 @@ def parse_backup(p_infos: dict) -> dict:
             "duration_seconds": parse_time(processed_time),
         },
         "added_to_repo": parse_size(added_to_the_repo),
-        "duration_seconds": p_infos["timer"].duration(),
+        "duration_seconds": process_infos["time"],
     }
 
 
-def parse_forget(p_infos: dict) -> dict:
-    output = p_infos["output"]
+def parse_forget(process_infos: dict) -> dict:
+    output = process_infos["output"][-1][1]
     re_removed_snapshots = re.findall(r"remove ([0-9]+) snapshots", output)
     return {
         "removed_snapshots": re_removed_snapshots[0] if re_removed_snapshots else 0,
-        "duration_seconds": p_infos["timer"].duration(),
+        "duration_seconds": process_infos["time"],
     }
 
 
-def parse_prune(p_infos: dict) -> dict:
-    output = p_infos["output"]
+def parse_prune(process_infos: dict) -> dict:
+    output = process_infos["output"][-1][1]
     containing_packs, containing_blobs, containing_size = re.findall(
         r"repository contains ([0-9]+) packs \(([0-9]+) blobs\) with (-?[0-9.]+ ?[a-zA-Z]*B)",
         output,
@@ -95,17 +86,15 @@ def parse_prune(p_infos: dict) -> dict:
         "rewritten_packs": rewritten_packs,
         "size_freed_bytes": parse_size(size_freed),
         "removed_index_files": removed_index_files,
-        "duration_seconds": p_infos["timer"].duration(),
+        "duration_seconds": process_infos["time"],
     }
 
 
-def parse_stats(p_infos: dict) -> dict:
-    output = p_infos["output"]
-
+def parse_stats(process_infos: dict) -> dict:
+    output = process_infos["output"][-1][1]
     stats_json = json.loads(output)
-    stats_json["duration_seconds"] = p_infos["timer"].duration()
-    logger.debug(
-        f"Total File Count: {stats_json['total_file_count']}\n"
-        f"Total Size: {make_size(stats_json['total_size'])}"
-    )
-    return stats_json
+    return {
+        "total_size_bytes": stats_json["total_size"],
+        "total_file_count": stats_json["total_file_count"],
+        "duration_seconds": process_infos["time"],
+    }

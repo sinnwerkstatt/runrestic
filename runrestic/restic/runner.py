@@ -11,15 +11,10 @@ from runrestic.restic.output_parsing import (
     parse_forget,
     parse_prune,
     parse_stats,
-    repo_init_check,
 )
-from runrestic.restic.tools import initialize_environment, run_multiple_commands
+from runrestic.restic.tools import MultiCommand, initialize_environment
 
 logger = logging.getLogger(__name__)
-
-
-def recursive_dict():
-    return defaultdict(recursive_dict)
 
 
 class ResticRunner:
@@ -46,17 +41,16 @@ class ResticRunner:
         for action in actions:
             if action == "init":
                 self.init()
-            if action == "backup":
+            elif action == "backup":
                 self.backup()
-            if action == "prune":
+            elif action == "prune":
                 self.forget()
                 self.prune()
-            # TODO!
-            # if action == "check":
-            #     self.check()
-            if action == "stats":
+            elif action == "check":
+                self.check()
+            elif action == "stats":
                 self.stats()
-            if action == "unlock":
+            elif action == "unlock":
                 self.unlock()
 
         self.metrics["last_run"] = datetime.now().timestamp()
@@ -71,71 +65,69 @@ class ResticRunner:
     def init(self):
         commands = [(repo, ["restic", "-r", repo, "init"]) for repo in self.repos]
 
-        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
+        direct_abort_reasons = ["config file already exists"]
+        cmd_runs = MultiCommand(
+            commands, self.config["execution"], direct_abort_reasons
+        ).run()
 
-        for repo, p_infos in cmd_runs.items():
-            if p_infos["output"][-1][0] > 0:
-                logger.warning(p_infos["output"])
+        for _, process_infos in cmd_runs.items():
+            if process_infos["output"][-1][0] > 0:
+                logger.warning(process_infos["output"])
             else:
-                logger.info(p_infos["output"])
+                logger.info(process_infos["output"])
 
     def backup(self):
         metrics = self.metrics["backup"] = {}
-        backup_cfg = self.config["backup"]
+        cfg = self.config["backup"]
+
+        hooks_cfg = self.config["execution"].copy()
+        hooks_cfg.update({"parallel": False, "shell": True})
 
         # backup pre_hooks
-        if backup_cfg.get("pre_hooks"):
-            cmd_runs = run_multiple_commands(
-                backup_cfg["pre_hooks"], config={"parallel": False, "shell": True}
-            )
+        if cfg.get("pre_hooks"):
+            cmd_runs = MultiCommand(cfg["pre_hooks"], config=hooks_cfg).run()
             metrics["_restic_pre_hooks"] = {
-                "duration_seconds": sum(
-                    [v["timer"].duration() for v in cmd_runs.values()]
-                )
+                "duration_seconds": sum([v["time"] for v in cmd_runs.values()])
             }
 
         # actual backup
         extra_args = []
-        for exclude_pattern in backup_cfg.get("exclude_patterns", []):
+        for exclude_pattern in cfg.get("exclude_patterns", []):
             extra_args += ["--exclude", exclude_pattern]
-        for exclude_file in backup_cfg.get("exclude_files", []):
+        for exclude_file in cfg.get("exclude_files", []):
             extra_args += ["--exclude-file", exclude_file]
 
         commands = [
-            (
-                repo,
-                (
-                    ["restic", "-r", repo, "backup"]
-                    + extra_args
-                    + backup_cfg.get("sources")
-                ),
-            )
+            (repo, ["restic", "-r", repo, "backup"] + extra_args + cfg.get("sources"),)
             for repo in self.repos
         ]
+        direct_abort_reasons = ["Fatal: unable to open config file"]
+        cmd_runs = MultiCommand(
+            commands, self.config["execution"], direct_abort_reasons
+        ).run()
 
-        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
-
-        for repo, p_infos in cmd_runs.items():
-            if p_infos["returncode"] > 0:
-                repo_init_check(p_infos["output"])
-                continue
-            metrics[repo] = parse_backup(p_infos)
+        for repo, process_infos in cmd_runs.items():
+            if process_infos["output"][-1][0] > 0:
+                logger.warning(process_infos)
+            else:
+                metrics[repo] = parse_backup(process_infos)
 
         # backup post_hooks
-        if backup_cfg.get("post_hooks"):
-            cmd_runs = run_multiple_commands(
-                backup_cfg["post_hooks"], config={"parallel": False, "shell": True}
-            )
+        if cfg.get("post_hooks"):
+            cmd_runs = MultiCommand(cfg["post_hooks"], config=hooks_cfg).run()
             metrics["_restic_post_hooks"] = {
-                "duration_seconds": sum(
-                    [v["timer"].duration() for v in cmd_runs.values()]
-                )
+                "duration_seconds": sum([v["time"] for v in cmd_runs.values()])
             }
 
     def unlock(self):
         commands = [(repo, ["restic", "-r", repo, "unlock"]) for repo in self.repos]
 
-        run_multiple_commands(commands, config=self.config["execution"])
+        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
+        for repo, process_infos in cmd_runs.items():
+            if process_infos["output"][-1][0] > 0:
+                logger.warning(process_infos["output"])
+            else:
+                logger.info(process_infos["output"])
 
     def forget(self):
         metrics = self.metrics["forget"] = {}
@@ -152,30 +144,28 @@ class ResticRunner:
         commands = [
             (repo, ["restic", "-r", repo, "forget"] + extra_args) for repo in self.repos
         ]
+        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
-        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
-
-        for repo, p_infos in cmd_runs.items():
-            if p_infos["returncode"] > 0:
-                repo_init_check(p_infos["output"])
-                continue
-            metrics[repo] = parse_forget(p_infos)
+        for repo, process_infos in cmd_runs.items():
+            if process_infos["output"][-1][0] > 0:
+                logger.warning(process_infos["output"])
+            else:
+                metrics[repo] = parse_forget(process_infos)
 
     def prune(self):
         metrics = self.metrics["prune"] = {}
 
         commands = [(repo, ["restic", "-r", repo, "prune"]) for repo in self.repos]
+        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
-        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
-
-        for repo, p_infos in cmd_runs.items():
-            if p_infos["returncode"] > 0:
-                repo_init_check(p_infos["output"])
-                continue
-            metrics[repo] = parse_prune(p_infos)
+        for repo, process_infos in cmd_runs.items():
+            if process_infos["output"][-1][0] > 0:
+                logger.warning(process_infos["output"])
+            else:
+                metrics[repo] = parse_prune(process_infos)
 
     def check(self):
-        check_cfg = self.config.get("check")
+        self.metrics["check"] = {}
         metrics = {
             "errors": 0,
             "errors_data": 0,
@@ -185,8 +175,9 @@ class ResticRunner:
         }
 
         extra_args = []
-        if check_cfg and "checks" in check_cfg:
-            checks = check_cfg["checks"]
+        cfg = self.config.get("check")
+        if cfg and "checks" in cfg:
+            checks = cfg["checks"]
             if "check-unused" in checks:
                 extra_args += ["--check-unused"]
                 metrics["check_unused"] = 1
@@ -197,25 +188,19 @@ class ResticRunner:
         commands = [
             (repo, ["restic", "-r", repo, "check"] + extra_args) for repo in self.repos
         ]
+        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
-        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
-
-        for repo, p_infos in cmd_runs.items():
-            if p_infos["returncode"] > 0:
-                repo_init_check(p_infos["output"])
-                continue
-            metrics[repo] = parse_check(p_infos)
-
-        #     metrics["errors"] = 1
-        #     if "error: load <snapshot/" in output:
-        #         metrics["errors_snapshots"] = 1
-        #     if "Pack ID does not match," in output:
-        #         metrics["errors_data"] = 1
-        #
-        # if self.log_metrics:
-        #     self.log["restic_check"] = metrics
-        #     self.log["restic_check"]["duration_seconds"] = time.time() - time_start
-        #     self.log["restic_check"]["rc"] = process_rc
+        for repo, process_infos in cmd_runs.items():
+            if process_infos["output"][-1][0] > 0:
+                logger.warning(process_infos["output"])
+                output = process_infos["output"][-1][1]
+                metrics["errors"] = 1
+                if "error: load <snapshot/" in output:
+                    metrics["errors_snapshots"] = 1
+                if "Pack ID does not match," in output:
+                    metrics["errors_data"] = 1
+            metrics["duration_seconds"] = process_infos["time"]
+            self.metrics["check"][repo] = metrics
 
     def stats(self):
         metrics = self.metrics["stats"] = {}
@@ -224,11 +209,10 @@ class ResticRunner:
             (repo, ["restic", "-r", repo, "stats", "-q", "--json"])
             for repo in self.repos
         ]
+        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
-        cmd_runs = run_multiple_commands(commands, config=self.config["execution"])
-
-        for repo, p_infos in cmd_runs.items():
-            if p_infos["returncode"] > 0:
-                repo_init_check(p_infos["output"])
-                continue
-            metrics[repo] = parse_stats(p_infos)
+        for repo, process_infos in cmd_runs.items():
+            if process_infos["output"][-1][0] > 0:
+                logger.warning(process_infos["output"])
+            else:
+                metrics[repo] = parse_stats(process_infos)
