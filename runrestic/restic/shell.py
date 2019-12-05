@@ -2,21 +2,21 @@ import logging
 import os
 import pty
 import sys
-from typing import List, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 from runrestic.restic.tools import initialize_environment
 
 logger = logging.getLogger(__name__)
 
 
-def restic_shell(configs: List[Dict]):
+def restic_shell(configs: List[Dict[str, Any]]) -> None:
     if len(configs) == 1 and len(configs[0]["repositories"]) == 1:
         logger.info("Found only one repository, using that one:\n")
         selected_config = configs[0]
         selected_repo = configs[0]["repositories"][0]
     else:
         print("The following repositories are available:")
-        all_repos: List[Tuple[dict, str]] = []
+        all_repos: List[Tuple[Dict[str, Any], str]] = []
         i = 0
         for config in configs:
             for repo in config["repositories"]:
@@ -24,7 +24,7 @@ def restic_shell(configs: List[Dict]):
                 all_repos += [(config, repo)]
                 i += 1
 
-        selection = int(input(f"Choose a repo [0-{i-1}]: "))
+        selection = int(input(f"Choose a repo [0-{i - 1}]: "))
         selected_config, selected_repo = all_repos[selection]
 
     env = selected_config["environment"]

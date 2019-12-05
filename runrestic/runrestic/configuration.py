@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import os
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import jsonschema
 import pkg_resources
@@ -20,7 +21,7 @@ SCHEMA = json.load(
 )
 
 
-def cli_arguments(args: list = None):
+def cli_arguments(args: Union[List[str], None] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="runrestic",
         description="""
@@ -62,7 +63,7 @@ def cli_arguments(args: list = None):
     return parser.parse_args(args)
 
 
-def possible_config_paths():
+def possible_config_paths() -> Sequence[str]:
     user_config_directory = os.getenv("XDG_CONFIG_HOME") or os.path.expandvars(
         os.path.join("$HOME", ".config")
     )
@@ -73,7 +74,8 @@ def possible_config_paths():
     ]
 
 
-def configuration_file_paths():
+def configuration_file_paths() -> Sequence[str]:
+    paths: List[str] = []
     for path in possible_config_paths():
         path = os.path.realpath(path)
 
@@ -81,7 +83,7 @@ def configuration_file_paths():
             continue
 
         if not os.path.isdir(path):  # pragma: no cover
-            yield path
+            paths += [path]
             continue
 
         for filename in os.listdir(path):
@@ -96,20 +98,23 @@ def configuration_file_paths():
                             f"You should set it to 0600: `chmod 0600 {filename}`\n"
                         )
                     )
-                else:
-                    yield filename
+                    continue
+
+                paths += [filename]
+
+    return paths
 
 
-def parse_configuration(config_filename):
+def parse_configuration(config_filename: str) -> Optional[Dict[str, Any]]:
     logger.debug(f"Parsing configuration file: {config_filename}")
     with open(config_filename) as file:
         try:
             config = toml.load(file)
         except toml.TomlDecodeError as e:
             logger.warning(f"Problem parsing {config_filename}: {e}\n")
-            return
+            return None
 
-    config = deep_update(CONFIG_DEFAULTS, config)
+    config = deep_update(CONFIG_DEFAULTS, dict(config))
 
     if "name" not in config:
         config["name"] = os.path.basename(config_filename)

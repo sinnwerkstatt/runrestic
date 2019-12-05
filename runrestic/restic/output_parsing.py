@@ -1,13 +1,14 @@
 import json
 import logging
 import re
+from typing import Any, Dict
 
-from runrestic.runrestic.tools import parse_size, parse_time, make_size
+from runrestic.runrestic.tools import parse_size, parse_time
 
 logger = logging.getLogger(__name__)
 
 
-def parse_backup(process_infos: dict) -> dict:
+def parse_backup(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     rc, output = process_infos["output"][-1]
     files_new, files_changed, files_unmodified = re.findall(
         r"Files:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified", output
@@ -45,7 +46,7 @@ def parse_backup(process_infos: dict) -> dict:
     }
 
 
-def parse_forget(process_infos: dict) -> dict:
+def parse_forget(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     rc, output = process_infos["output"][-1]
     re_removed_snapshots = re.findall(r"remove ([0-9]+) snapshots", output)
     return {
@@ -55,7 +56,7 @@ def parse_forget(process_infos: dict) -> dict:
     }
 
 
-def parse_prune(process_infos: dict) -> dict:
+def parse_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     rc, output = process_infos["output"][-1]
     containing_packs, containing_blobs, containing_size = re.findall(
         r"repository contains ([0-9]+) packs \(([0-9]+) blobs\) with (-?[0-9.]+ ?[a-zA-Z]*B)",
@@ -93,7 +94,7 @@ def parse_prune(process_infos: dict) -> dict:
     }
 
 
-def parse_stats(process_infos: dict) -> dict:
+def parse_stats(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     rc, output = process_infos["output"][-1]
     stats_json = json.loads(output)
     return {

@@ -1,3 +1,5 @@
+from typing import Any, Dict, Iterator
+
 _restic = """
 restic_last_run{{config="{name}"}} {last_run}
 restic_total_duration_seconds{{config="{name}"}} {total_duration_seconds}
@@ -69,7 +71,7 @@ restic_stats_rc{{config="{name}",repository="{repository}"}} {rc}
 """
 
 
-def prometheus_generate_lines(metrics, name):
+def generate_lines(metrics: Dict[str, Any], name: str) -> Iterator[str]:
     yield _restic.format(name=name, **metrics)
 
     for repo, mtrx in metrics.get("backup", {}).items():
@@ -92,6 +94,6 @@ def prometheus_generate_lines(metrics, name):
         yield _restic_stats.format(name=name, repository=repo, **mtrx)
 
 
-def prometheus_write_file(lines, path):
+def write_file(lines: str, path: str) -> None:
     with open(path, "w") as file:
         file.writelines(lines)

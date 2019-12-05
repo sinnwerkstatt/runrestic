@@ -9,7 +9,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-def restic_check():
+def restic_check() -> bool:
     if which("restic"):
         return True
     carry_on = input(
@@ -17,18 +17,18 @@ def restic_check():
     )
     if carry_on in ["", "y", "Y"]:
         download_restic()
-    else:
-        return False
+        return True
+    return False
 
 
-def download_restic():
+def download_restic() -> None:
     github_json = json.loads(
         requests.get(
             "https://api.github.com/repos/restic/restic/releases/latest"
         ).content
     )
 
-    download_url = None
+    download_url = ""
     for asset in github_json["assets"]:
         if "linux_amd64.bz2" in asset["name"]:
             download_url = asset["browser_download_url"]

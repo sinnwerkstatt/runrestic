@@ -3,7 +3,7 @@ import time
 
 from runrestic.restic.tools import (
     retry_process,
-    run_multiple_commands,
+    MultiCommand,
     initialize_environment,
 )
 
@@ -86,24 +86,12 @@ def test_run_multiple_commands_parallel(tmpdir):
     ]
     config = {"retry_count": 2, "parallel": True, "retry_backoff": "0:01"}
     start_time = time.time()
-    aa = run_multiple_commands(cmds, config)
+    aa = MultiCommand(cmds, config).run()
     assert 3 > time.time() - start_time > 2
-    expected_return = {0: [1, 1, 0], 1: [1, 0], 2: [0]}
+    expected_return = [[1, 1, 0], [1, 0],  [0]]
 
-    for cmd_id, cmd_ret in aa.items():
-        assert [x[0] for x in cmd_ret["output"]] == expected_return[cmd_id]
-
-    cmds = [
-        ("alpha", ["python", "tests/retry_testing_tool.py", "1", "aa", tmpdir]),
-        ("beta", ["python", "tests/retry_testing_tool.py", "1", "ab", tmpdir]),
-        ("gamma", ["python", "tests/retry_testing_tool.py", "1", "ac", tmpdir]),
-    ]
-    config = {"retry_count": 0, "parallel": True}
-    aa = run_multiple_commands(cmds, config)
-    expected_return = {"alpha": [0], "beta": [0], "gamma": [0]}
-
-    for cmd_id, cmd_ret in aa.items():
-        assert [x[0] for x in cmd_ret["output"]] == expected_return[cmd_id]
+    for exp, cmd_ret in zip(expected_return, aa):
+        assert [x[0] for x in cmd_ret["output"]] == exp
 
 
 def test_run_multiple_commands_serial(tmpdir):
@@ -114,12 +102,12 @@ def test_run_multiple_commands_serial(tmpdir):
     ]
     config = {"retry_count": 2, "parallel": False, "retry_backoff": "0:01"}
     start_time = time.time()
-    aa = run_multiple_commands(cmds, config)
+    aa = MultiCommand(cmds, config).run()
     assert 9 > float(time.time() - start_time) > 6
-    expected_return = {0: [1, 1, 0], 1: [1, 1, 0], 2: [1, 1, 1]}
+    expected_return = [[1, 1, 0], [1, 1, 0], [1, 1, 1]]
 
-    for cmd_id, cmd_ret in aa.items():
-        assert [x[0] for x in cmd_ret["output"]] == expected_return[cmd_id]
+    for exp, cmd_ret in zip(expected_return, aa):
+        assert [x[0] for x in cmd_ret["output"]] == exp
 
 
 def test_initialize_environment():

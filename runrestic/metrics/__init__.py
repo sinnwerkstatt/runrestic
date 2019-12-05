@@ -1,10 +1,10 @@
-from runrestic.metrics.prometheus import prometheus_write_file
+from typing import Any, Dict
 
-from .prometheus import prometheus_generate_lines
+from . import prometheus
 
 
-def write_metrics(metrics: dict, config: dict):
+def write_metrics(metrics: Dict[str, Any], config: Dict[str, Any]) -> None:
     configuration = config["metrics"]
     if "prometheus" in configuration.keys():
-        lines = prometheus_generate_lines(metrics, config["name"])
-        return prometheus_write_file(lines, configuration["prometheus"]["path"])
+        lines = prometheus.generate_lines(metrics, config["name"])
+        prometheus.write_file(str(lines), configuration["prometheus"]["path"])

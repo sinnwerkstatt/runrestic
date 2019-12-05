@@ -1,4 +1,5 @@
 import re
+from typing import Any, Dict
 
 
 def make_size(size: int) -> str:
@@ -40,21 +41,7 @@ def parse_time(time_str: str) -> int:
     return seconds
 
 
-# def timethis(target: dict, name: str = None):
-#     def wrap(f):
-#         def wrapped_f(*args):
-#             start_time = time.time()
-#             ret = f(*args)
-#             end_time = time.time()
-#             target[name or f.__name__] = end_time - start_time
-#             return ret
-#
-#         return wrapped_f
-#
-#     return wrap
-
-
-def deep_update(base: dict, update: dict) -> dict:
+def deep_update(base: Dict[Any, Any], update: Dict[Any, Any]) -> Dict[Any, Any]:
     new = base.copy()
     for key, value in update.items():
         base_value = new.get(key, {})

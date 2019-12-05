@@ -14,5 +14,5 @@ install:
 
 script:
   - poetry run black . --check
-  - poetry run mypy runrestic --ignore-missing-imports
+  - poetry run mypy runrestic --ignore-missing-imports --strict
   - poetry run pytest

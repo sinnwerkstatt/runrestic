@@ -21,6 +21,7 @@ classifiers = [
 python = "^3.6"
 toml = "~0.10"
 jsonschema = "~3.0"
+requests = "*"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"

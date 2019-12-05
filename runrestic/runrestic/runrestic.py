@@ -1,6 +1,7 @@
 import logging
 import os
 import signal
+from typing import Any, Dict, List
 
 from runrestic.restic.installer import restic_check
 from runrestic.restic.runner import ResticRunner
@@ -15,7 +16,7 @@ from runrestic.runrestic.configuration import (
 logger = logging.getLogger(__name__)
 
 
-def configure_logging(level: str):
+def configure_logging(level: str) -> None:
     level = logging.getLevelName(level.upper())
     log = logging.getLogger("runrestic")
     log.setLevel(level)
@@ -26,8 +27,8 @@ def configure_logging(level: str):
     log.addHandler(handler)
 
 
-def configure_signals():
-    def kill_the_group(signal_number, frame):
+def configure_signals() -> None:
+    def kill_the_group(signal_number: signal.Signals, frame: Any) -> None:
         os.killpg(os.getpgrp(), signal_number)
 
     signals = [
@@ -41,7 +42,7 @@ def configure_signals():
     [signal.signal(sig, kill_the_group) for sig in signals]
 
 
-def runrestic():
+def runrestic() -> None:
     if not restic_check():
         return
 
@@ -59,10 +60,15 @@ def runrestic():
                 f"Error: No configuration files found in {possible_config_paths()}"
             )
 
-    configs = [parse_configuration(c) for c in config_file_paths]
+    configs: List[Dict[str, Any]] = []
+    for c in config_file_paths:
+        parsed_cfg = parse_configuration(c)
+        if parsed_cfg:
+            configs += [parsed_cfg]
 
     if "shell" in args.actions:
-        return restic_shell(configs)
+        restic_shell(configs)
+        return
 
     for config in configs:
         runner = ResticRunner(config, args)
