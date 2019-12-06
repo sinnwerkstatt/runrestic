@@ -1,4 +1,4 @@
-import argparse
+from argparse import Namespace
 import json
 import logging
 import time
@@ -18,9 +18,12 @@ logger = logging.getLogger(__name__)
 
 
 class ResticRunner:
-    def __init__(self, config: Dict[str, Any], args: argparse.Namespace) -> None:
+    def __init__(
+        self, config: Dict[str, Any], args: Namespace, restic_args: List[str]
+    ) -> None:
         self.config = config
         self.args = args
+        self.restic_args = restic_args
 
         self.repos = self.config["repositories"]
 
@@ -62,7 +65,9 @@ class ResticRunner:
             write_metrics(self.metrics, self.config)
 
     def init(self) -> None:
-        commands = [["restic", "-r", repo, "init"] for repo in self.repos]
+        commands = [
+            ["restic", "-r", repo, "init"] + self.restic_args for repo in self.repos
+        ]
 
         direct_abort_reasons = ["config file already exists"]
         cmd_runs = MultiCommand(
@@ -98,7 +103,10 @@ class ResticRunner:
             extra_args += ["--exclude-file", exclude_file]
 
         commands = [
-            ["restic", "-r", repo, "backup"] + extra_args + cfg.get("sources")
+            ["restic", "-r", repo, "backup"]
+            + self.restic_args
+            + extra_args
+            + cfg.get("sources")
             for repo in self.repos
         ]
         direct_abort_reasons = ["Fatal: unable to open config file"]
@@ -121,7 +129,9 @@ class ResticRunner:
             }
 
     def unlock(self) -> None:
-        commands = [["restic", "-r", repo, "unlock"] for repo in self.repos]
+        commands = [
+            ["restic", "-r", repo, "unlock"] + self.restic_args for repo in self.repos
+        ]
 
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
         for process_infos in cmd_runs:
@@ -143,7 +153,8 @@ class ResticRunner:
                 extra_args += ["--group-by", value]
 
         commands = [
-            ["restic", "-r", repo, "forget"] + extra_args for repo in self.repos
+            ["restic", "-r", repo, "forget"] + self.restic_args + extra_args
+            for repo in self.repos
         ]
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
@@ -156,7 +167,9 @@ class ResticRunner:
     def prune(self) -> None:
         metrics = self.metrics["prune"] = {}
 
-        commands = [["restic", "-r", repo, "prune"] for repo in self.repos]
+        commands = [
+            ["restic", "-r", repo, "prune"] + self.restic_args for repo in self.repos
+        ]
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
@@ -186,7 +199,10 @@ class ResticRunner:
                 extra_args += ["--read-data"]
                 metrics["read_data"] = 1
 
-        commands = [["restic", "-r", repo, "check"] + extra_args for repo in self.repos]
+        commands = [
+            ["restic", "-r", repo, "check"] + self.restic_args + extra_args
+            for repo in self.repos
+        ]
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
@@ -207,7 +223,8 @@ class ResticRunner:
         metrics = self.metrics["stats"] = {}
 
         commands = [
-            ["restic", "-r", repo, "stats", "-q", "--json"] for repo in self.repos
+            ["restic", "-r", repo, "stats", "-q", "--json"] + self.restic_args
+            for repo in self.repos
         ]
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 

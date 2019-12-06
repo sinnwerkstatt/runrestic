@@ -42,16 +42,19 @@ For a more comprehensive example see the [example.toml](https://github.com/andre
 
 ## Getting started
 
-To get up and running, first [install Restic](https://restic.net/#installation). 
-
+### Installing runrestic and restic
 To install **runrestic**, run the following command to download and install it:
 
 ```bash
 sudo pip3 install --upgrade runrestic
 ```
 
-Note that your pip binary may have a different name than `pip3`. Make sure
-you're using Python 3, as runrestic does not support Python 2.
+<br>
+
+You can either manually download and install [Restic](https://restic.net/) or you can just run `runrestic` and it'll try to download it for you.
+
+
+### Initializing and running
 
 Once you have `restic` and `runrestic` ready, you should put a config file in on of the scanned locations, namely:
 
@@ -69,32 +72,24 @@ runrestic  # without actions will do: runrestic backup prune check
 runrestic [action]
 ```
 
-## Grafana
-@d-matt created a nice dashboard for Grafana here: https://grafana.com/grafana/dashboards/11064/revisions
+<br>
+Certain `restic` flags like `--dry-run/-n` are built into `runrestic` as well and will be passed to restic where applicable.
 
-# Changelog
-* v 0.5.0: **Big refactoring**. Expect breaking changes.
-    * metrics output is a bit different
-    * see new `parallel` and `retry_*` options. 
+If, however, you need to pass along arbitrary other flags you can now add them to the end of your `runrestic` call like so: 
+```bash
+runrestic backup -- --one-file-system
+``` 
 
+### Prometheus / Grafana metrics
+[@d-matt](https://github.com/d-matt) created a nice dashboard for Grafana here: https://grafana.com/grafana/dashboards/11064/revisions
 
-# Autopilot
+### systemd timer or cron
 
 If you want to run runrestic automatically, say once a day, the you can
 configure a job runner to invoke it periodically.
 
-### cron
 
-If you're using cron, download the [sample cron file](https://raw.githubusercontent.com/andreasnuesslein/runrestic/master/sample/cron/runrestic).
-Then, from the directory where you downloaded it:
-
-```bash
-sudo mv runrestic /etc/cron.d/runrestic
-sudo chmod +x /etc/cron.d/runrestic
-```
-
-
-### systemd
+#### systemd
 
 If you're using systemd instead of cron to run jobs, download the [sample systemd service file](https://raw.githubusercontent.com/andreasnuesslein/runrestic/master/sample/systemd/runrestic.service)
 and the [sample systemd timer file](https://raw.githubusercontent.com/andreasnuesslein/runrestic/master/sample/systemd/runrestic.timer).
@@ -106,6 +101,21 @@ sudo systemctl enable runrestic.timer
 sudo systemctl start runrestic.timer
 ```
 
+#### cron
+
+If you're using cron, download the [sample cron file](https://raw.githubusercontent.com/andreasnuesslein/runrestic/master/sample/cron/runrestic).
+Then, from the directory where you downloaded it:
+
+```bash
+sudo mv runrestic /etc/cron.d/runrestic
+sudo chmod +x /etc/cron.d/runrestic
+```
+
+## Changelog
+* v**0.5**! Expect breaking changes.
+    * metrics output is a bit different
+    * see new `parallel` and `retry_*` options. 
+
 
 # Thanks
-Much of this project is copy and paste from [borgmatic](https://github.com/witten/borgmatic/).
+This project was initially based on [borgmatic](https://github.com/witten/borgmatic/) but has since evolved into something else.

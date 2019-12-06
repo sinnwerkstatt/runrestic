@@ -46,7 +46,7 @@ def runrestic() -> None:
     if not restic_check():
         return
 
-    args = cli_arguments()
+    args, extras = cli_arguments()
     configure_logging(args.log_level)
     configure_signals()
 
@@ -71,7 +71,7 @@ def runrestic() -> None:
         return
 
     for config in configs:
-        runner = ResticRunner(config, args)
+        runner = ResticRunner(config, args, extras)
         runner.run()
 
 

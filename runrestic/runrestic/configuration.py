@@ -1,8 +1,8 @@
-import argparse
 import json
 import logging
 import os
-from typing import Any, Dict, List, Optional, Sequence, Union
+from argparse import ArgumentParser, Namespace
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import jsonschema
 import pkg_resources
@@ -21,8 +21,8 @@ SCHEMA = json.load(
 )
 
 
-def cli_arguments(args: Union[List[str], None] = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
+def cli_arguments(args: Union[List[str], None] = None) -> Tuple[Namespace, List[str]]:
+    parser = ArgumentParser(
         prog="runrestic",
         description="""
             A wrapper for restic. It runs restic based on config files and also outputs metrics.
@@ -34,7 +34,7 @@ def cli_arguments(args: Union[List[str], None] = None) -> argparse.Namespace:
         "actions",
         type=str,
         nargs="*",
-        help="one or more from the following actions: [init,backup,prune,check]",
+        help="one or more from the following actions: [shell, init, backup, prune, check, stats, unlock]",
     )
     parser.add_argument(
         "-n",
@@ -60,7 +60,21 @@ def cli_arguments(args: Union[List[str], None] = None) -> argparse.Namespace:
     parser.add_argument(
         "-v", "--version", action="version", version="%(prog)s " + __version__
     )
-    return parser.parse_args(args)
+
+    options, extras = parser.parse_known_args(args)
+    if extras:
+        extras = [x for x in extras if x != "--"]
+    else:
+        valid_actions = ["shell", "init", "backup", "prune", "check", "stats", "unlock"]
+        extras = []
+        new_actions: List[str] = []
+        for act in options.actions:
+            if act in valid_actions:
+                new_actions += [act]
+            else:
+                extras += [act]
+        options.actions = new_actions
+    return options, extras
 
 
 def possible_config_paths() -> Sequence[str]:

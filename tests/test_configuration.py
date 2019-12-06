@@ -1,4 +1,4 @@
-import argparse
+from argparse import Namespace
 import os
 
 import pytest
@@ -12,14 +12,25 @@ from runrestic.runrestic.configuration import (
 
 
 def test_cli_arguments():
-    assert cli_arguments([]) == argparse.Namespace(
-        actions=[], config_file=None, dry_run=False, log_level="info"
+    assert cli_arguments([]) == (
+        Namespace(actions=[], config_file=None, dry_run=False, log_level="info"),
+        [],
     )
-    assert cli_arguments(["-l", "debug"]) == argparse.Namespace(
-        actions=[], config_file=None, dry_run=False, log_level="debug"
+    assert cli_arguments(["-l", "debug"]) == (
+        Namespace(actions=[], config_file=None, dry_run=False, log_level="debug"),
+        [],
     )
-    assert cli_arguments(["backup"]) == argparse.Namespace(
-        actions=["backup"], config_file=None, dry_run=False, log_level="info"
+    assert cli_arguments(["backup"]) == (
+        Namespace(
+            actions=["backup"], config_file=None, dry_run=False, log_level="info"
+        ),
+        [],
+    )
+    assert cli_arguments(["backup", "--", "--one-file-system"]) == (
+        Namespace(
+            actions=["backup"], config_file=None, dry_run=False, log_level="info"
+        ),
+        ["--one-file-system"],
     )
     with pytest.raises(SystemExit):
         cli_arguments(["-h"])
