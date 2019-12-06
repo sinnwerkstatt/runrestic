@@ -88,7 +88,7 @@ def test_run_multiple_commands_parallel(tmpdir):
     start_time = time.time()
     aa = MultiCommand(cmds, config).run()
     assert 3 > time.time() - start_time > 2
-    expected_return = [[1, 1, 0], [1, 0],  [0]]
+    expected_return = [[1, 1, 0], [1, 0], [0]]
 
     for exp, cmd_ret in zip(expected_return, aa):
         assert [x[0] for x in cmd_ret["output"]] == exp
