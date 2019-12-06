@@ -8,3 +8,4 @@ __pycache__/
 .coverage*
 .mypy_cache/
 .pytest_cache/
+dist/
