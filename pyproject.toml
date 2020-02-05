@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "runrestic"
-version = "0.5b0"
+version = "0.5.0"
 description = "A wrapper script for Restic backup software that inits, creates, prunes and checks backups"
 license = "GPL-3.0+"
 authors = [ "Andreas Nüßlein <andreas@nuessle.in>" ]
@@ -25,7 +25,7 @@ requests = "*"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"
-black = { version = "*", allows-prereleases = true }
+black = { version = "*", allow-prereleases = true }
 mypy = "*"
 pytest = "*"
 pytest-cov = "*"

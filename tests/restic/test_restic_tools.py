@@ -78,6 +78,16 @@ def test_retry_process_with_backoff(tmpdir):
     assert p == {"current_try": 3, "tries_total": 3}
 
 
+def test_retry_process_with_abort_reason(tmpdir):
+    p = retry_process(
+        ["python", "tests/retry_testing_tool.py", "10", "aaa", tmpdir], {"retry_count": 99},
+        abort_reasons=[": 1/10"]
+    )
+    p.pop("time")
+    assert p.pop("output")[-1][0] == 1
+    assert p == {"current_try": 1, "tries_total": 100}
+
+
 def test_run_multiple_commands_parallel(tmpdir):
     cmds = [
         ["python", "tests/retry_testing_tool.py", "3", "l", tmpdir],
