@@ -80,8 +80,9 @@ def test_retry_process_with_backoff(tmpdir):
 
 def test_retry_process_with_abort_reason(tmpdir):
     p = retry_process(
-        ["python", "tests/retry_testing_tool.py", "10", "aaa", tmpdir], {"retry_count": 99},
-        abort_reasons=[": 1/10"]
+        ["python", "tests/retry_testing_tool.py", "10", "aaa", tmpdir],
+        {"retry_count": 99},
+        abort_reasons=[": 1/10"],
     )
     p.pop("time")
     assert p.pop("output")[-1][0] == 1
