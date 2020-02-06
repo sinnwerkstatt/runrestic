@@ -77,8 +77,10 @@ def retry_process(
 
 def initialize_environment(config: Dict[str, Any]) -> None:
     for key, value in config.items():
-        logger.debug(f"[Environment] {key}={value}")
         os.environ[key] = value
+        if key == "RESTIC_PASSWORD":
+            value = "**********"
+        logger.debug(f"[Environment] {key}={value}")
 
     if os.geteuid() == 0:  # pragma: no cover; if user is root, we just use system cache
         os.environ["XDG_CACHE_HOME"] = "/var/cache"
