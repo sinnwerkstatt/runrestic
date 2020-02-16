@@ -5,8 +5,8 @@ description = "A wrapper script for Restic backup software that inits, creates, 
 license = "GPL-3.0+"
 authors = [ "Andreas Nüßlein <andreas@nuessle.in>" ]
 readme = 'README.md'
-repository = "https://github.com/andreasnuesslein/runrestic"
-homepage = "https://github.com/andreasnuesslein/runrestic"
+repository = "https://github.com/sinnwerkstatt/runrestic"
+homepage = "https://github.com/sinnwerkstatt/runrestic"
 keywords = ["backup"]
 classifiers = [
   "Development Status :: 4 - Beta",

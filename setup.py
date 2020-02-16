@@ -15,8 +15,8 @@ setup(
     description="A wrapper script for Restic backup software that inits, creates, prunes and checks backups",
     python_requires=">=3.6.0",
     project_urls={
-        "homepage": "https://github.com/andreasnuesslein/runrestic",
-        "repository": "https://github.com/andreasnuesslein/runrestic",
+        "homepage": "https://github.com/sinnwerkstatt/runrestic",
+        "repository": "https://github.com/sinnwerkstatt/runrestic",
     },
     author="Andreas Nüßlein",
     author_email="andreas@nuessle.in",
