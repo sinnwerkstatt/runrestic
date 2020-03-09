@@ -147,10 +147,12 @@ class ResticRunner:
         if self.args.dry_run:
             extra_args += ["--dry-run"]
         for key, value in self.config["prune"].items():
-            if key.startswith("keep-"):
-                extra_args += ["--{key}".format(key=key), str(value)]
             if key == "group-by":
                 extra_args += ["--group-by", value]
+            elif key == "keep-within":
+                extra_args += ["--keep-within", value]
+            elif key.startswith("keep-"):
+                extra_args += ["--{key}".format(key=key), str(value)]
 
         commands = [
             ["restic", "-r", repo, "forget"] + self.restic_args + extra_args
