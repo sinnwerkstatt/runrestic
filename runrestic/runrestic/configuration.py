@@ -126,7 +126,7 @@ def parse_configuration(config_filename: str) -> Optional[Dict[str, Any]]:
             config = toml.load(file)
         except toml.TomlDecodeError as e:
             logger.warning(f"Problem parsing {config_filename}: {e}\n")
-            return None
+            return -1
 
     config = deep_update(CONFIG_DEFAULTS, dict(config))
 
