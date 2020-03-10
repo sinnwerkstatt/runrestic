@@ -152,7 +152,7 @@ class ResticRunner:
             elif key == "keep-within":
                 extra_args += ["--keep-within", value]
             elif key.startswith("keep-"):
-                extra_args += ["--{key}".format(key=key), str(value)]
+                extra_args += [f"--{key}", str(value)]
 
         commands = [
             ["restic", "-r", repo, "forget"] + self.restic_args + extra_args
