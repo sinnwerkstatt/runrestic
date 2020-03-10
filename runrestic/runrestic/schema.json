@@ -86,7 +86,7 @@
         "keep-weekly": {"type": "integer"},
         "keep-monthly": {"type": "integer"},
         "keep-yearly": {"type": "integer"},
-        "keep-within": {"type": "integer"},
+        "keep-within": {"type": "string"},
         "keep-tag": {"type": "integer"},
         "group-by": {"type": "string"}
       }

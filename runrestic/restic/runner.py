@@ -148,7 +148,7 @@ class ResticRunner:
             extra_args += ["--dry-run"]
         for key, value in self.config["prune"].items():
             if key.startswith("keep-"):
-                extra_args += ["--{key}".format(key=key), str(value)]
+                extra_args += [f"--{key}", str(value)]
             if key == "group-by":
                 extra_args += ["--group-by", value]
 
