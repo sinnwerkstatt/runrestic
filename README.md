@@ -117,5 +117,27 @@ sudo chmod +x /etc/cron.d/runrestic
     * see new `parallel` and `retry_*` options. 
 
 
+## Development
+
+This project is managed with [poetry](https://python-poetry.org/)
+
+[Install it](https://github.com/python-poetry/poetry#installation) if not already present:
+```bash
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+# or
+pip install --user poetry
+```
+
+### Installing dependencies
+```bash
+poetry install
+```
+
+### Running Tests
+
+```bash
+poetry run pytest
+```
+
 # Thanks
 This project was initially based on [borgmatic](https://github.com/witten/borgmatic/) but has since evolved into something else.
