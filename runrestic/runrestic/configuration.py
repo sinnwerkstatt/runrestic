@@ -119,14 +119,10 @@ def configuration_file_paths() -> Sequence[str]:
     return paths
 
 
-def parse_configuration(config_filename: str) -> Optional[Dict[str, Any]]:
+def parse_configuration(config_filename: str) -> Dict[str, Any]:
     logger.debug(f"Parsing configuration file: {config_filename}")
     with open(config_filename) as file:
-        try:
-            config = toml.load(file)
-        except toml.TomlDecodeError as e:
-            logger.warning(f"Problem parsing {config_filename}: {e}\n")
-            return None
+        config = toml.load(file)
 
     config = deep_update(CONFIG_DEFAULTS, dict(config))
 
