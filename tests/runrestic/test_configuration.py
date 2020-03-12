@@ -105,7 +105,7 @@ def test_parse_configuration_good_conf(restic_minimal_good_conf):
 
 def test_parse_configuration_broken_conf(caplog, restic_minimal_broken_conf):
     config = parse_configuration(restic_minimal_broken_conf)
-    assert config is None
+    assert config is -1
     assert f"Problem parsing {restic_minimal_broken_conf}" in caplog.text
 
 
