@@ -117,13 +117,15 @@ sudo chmod +x /etc/cron.d/runrestic
     * see new `parallel` and `retry_*` options. 
 
 
-## Developping
+## Development
 
-This project is managed with [poetry](https://python-poetry.org/docs/)
+This project is managed with [poetry](https://python-poetry.org/)
 
-Install it if not already present:
+[Install it](https://github.com/python-poetry/poetry#installation) if not already present:
 ```bash
 curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+# or
+pip install --user poetry
 ```
 
 ### Installing dependencies
