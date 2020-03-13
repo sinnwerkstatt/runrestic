@@ -1,6 +1,6 @@
 ![python version](https://img.shields.io/badge/python-3.6+-blue.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![Travis (.com)](https://img.shields.io/travis/com/sinnwerkstatt/runrestic)
+![Travis (.com)](https://api.travis-ci.com/sinnwerkstatt/runrestic.svg?branch=master)
 ![PyPI](https://img.shields.io/pypi/v/runrestic)
 [![Stackshare: runrestic](https://img.shields.io/badge/stackshare-runrestic-068DFE.svg)](https://stackshare.io/runrestic)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/runrestic)
