@@ -1,7 +1,8 @@
 import logging
 import os
 import time
-from multiprocessing.pool import ApplyResult, Pool
+from concurrent.futures import Future
+from concurrent.futures.process import ProcessPoolExecutor
 from subprocess import PIPE, Popen, STDOUT
 from typing import Any, Dict, List, Optional, Sequence, Union
 
@@ -17,21 +18,21 @@ class MultiCommand:
         config: Dict[str, Any],
         abort_reasons: Optional[List[str]] = None,
     ):
-        self.threads: List[ApplyResult[Dict[str, Any]]] = []
+        self.threads: List[Future[Dict[str, Any]]] = []
         self.commands = commands
         self.config = config
         self.abort_reasons = abort_reasons
         concurrent_processes = len(commands) if config["parallel"] else 1
-        self.pool = Pool(processes=concurrent_processes)
+        self.executor = ProcessPoolExecutor(max_workers=concurrent_processes)
 
     def run(self) -> List[Dict[str, Any]]:
         for command in self.commands:
             logger.debug(f'Spawning "{command}"')
-            task = self.pool.apply_async(
-                retry_process, (command, self.config, self.abort_reasons)
+            task = self.executor.submit(
+                retry_process, command, self.config, self.abort_reasons
             )
             self.threads += [task]
-        return [process.get() for process in self.threads]
+        return [process.result() for process in self.threads]
 
 
 def retry_process(
