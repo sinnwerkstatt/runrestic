@@ -18,21 +18,24 @@ class MultiCommand:
         config: Dict[str, Any],
         abort_reasons: Optional[List[str]] = None,
     ):
-        self.threads: List[Future[Dict[str, Any]]] = []
+        self.processes: List[Future[Dict[str, Any]]] = []
         self.commands = commands
         self.config = config
         self.abort_reasons = abort_reasons
-        concurrent_processes = len(commands) if config["parallel"] else 1
-        self.executor = ProcessPoolExecutor(max_workers=concurrent_processes)
+        self.process_pool_executor = ProcessPoolExecutor(
+            max_workers=len(commands) if config["parallel"] else 1
+        )
 
     def run(self) -> List[Dict[str, Any]]:
         for command in self.commands:
             logger.debug(f'Spawning "{command}"')
-            task = self.executor.submit(
+            process = self.process_pool_executor.submit(
                 retry_process, command, self.config, self.abort_reasons
             )
-            self.threads += [task]
-        return [process.result() for process in self.threads]
+            self.processes += [process]
+
+        # result() is blocking. The function will return when all processes are done
+        return [process.result() for process in self.processes]
 
 
 def retry_process(
