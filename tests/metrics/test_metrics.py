@@ -95,6 +95,7 @@ def test_write_metrics(tmpdir):
                 "rc": 0,
             },
         },
+        "errors": 0,
         "last_run": 1575577432.185576,
         "total_duration_seconds": 62.44408392906189,
     }
