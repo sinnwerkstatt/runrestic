@@ -185,30 +185,30 @@ def generate_lines(metrics: Dict[str, Any], name: str) -> Iterator[str]:
         elif repo == "_restic_post_hooks":
             yield _restic_post_hooks.format(name=name, **mtrx)
         else:
-            if mtrx['rc'] != 0:
+            if mtrx["rc"] != 0:
                 yield f'restic_backup_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}'
             else:
                 yield _restic_backup.format(name=name, repository=repo, **mtrx)
 
     for repo, mtrx in metrics.get("forget", {}).items():
-        if mtrx['rc'] != 0:
+        if mtrx["rc"] != 0:
             yield f'restic_forget_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}'
         else:
             yield _restic_forget.format(name=name, repository=repo, **mtrx)
     for repo, mtrx in metrics.get("prune", {}).items():
-        if mtrx['rc'] != 0:
+        if mtrx["rc"] != 0:
             yield f'restic_prune_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}'
         else:
             yield _restic_prune.format(name=name, repository=repo, **mtrx)
 
     for repo, mtrx in metrics.get("check", {}).items():
-        if mtrx['rc'] != 0:
+        if mtrx["rc"] != 0:
             yield f'restic_check_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}'
         else:
             yield _restic_check.format(name=name, repository=repo, **mtrx)
 
     for repo, mtrx in metrics.get("stats", {}).items():
-        if mtrx['rc'] != 0:
+        if mtrx["rc"] != 0:
             yield f'restic_stats_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}'
         else:
             yield _restic_stats.format(name=name, repository=repo, **mtrx)
