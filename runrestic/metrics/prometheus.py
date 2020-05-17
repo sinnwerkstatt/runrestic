@@ -5,6 +5,8 @@ _restic_help = """
 # TYPE restic_last_run gauge
 # HELP restic_total_duration_seconds Total duration in seconds
 # TYPE restic_total_duration_seconds gauge
+# HELP restic_total_errors Total amount of errors within the last run
+# TYPE restic_total_errors gauge
 
 # HELP restic_pre_hooks_duration_seconds Pre hooks duration in seconds
 # TYPE restic_pre_hooks_duration_seconds gauge
