@@ -27,7 +27,7 @@ class ResticRunner:
 
         self.repos = self.config["repositories"]
 
-        self.metrics: Dict[str, Any] = {}
+        self.metrics: Dict[str, Any] = {"errors": 0}
         self.log_metrics = config.get("metrics") and not args.dry_run
 
         initialize_environment(self.config["environment"])
@@ -115,8 +115,11 @@ class ResticRunner:
         ).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
-            if process_infos["output"][-1][0] > 0:
+            rc = process_infos["output"][-1][0]
+            if rc > 0:
                 logger.warning(process_infos)
+                metrics[repo] = {"rc": rc}
+                self.metrics["errors"] += 1
             else:
                 metrics[repo] = parse_backup(process_infos)
 
@@ -159,8 +162,11 @@ class ResticRunner:
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
-            if process_infos["output"][-1][0] > 0:
+            rc = process_infos["output"][-1][0]
+            if rc > 0:
                 logger.warning(process_infos["output"])
+                metrics[repo] = {"rc": rc}
+                self.metrics["errors"] += 1
             else:
                 metrics[repo] = parse_forget(process_infos)
 
@@ -173,20 +179,16 @@ class ResticRunner:
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
-            if process_infos["output"][-1][0] > 0:
+            rc = process_infos["output"][-1][0]
+            if rc > 0:
                 logger.warning(process_infos["output"])
+                metrics[repo] = {"rc": rc}
+                self.metrics["errors"] += 1
             else:
                 metrics[repo] = parse_prune(process_infos)
 
     def check(self) -> None:
         self.metrics["check"] = {}
-        metrics = {
-            "errors": 0,
-            "errors_data": 0,
-            "errors_snapshots": 0,
-            "read_data": 0,
-            "check_unused": 0,
-        }
 
         extra_args: List[str] = []
         cfg = self.config.get("check")
@@ -194,10 +196,8 @@ class ResticRunner:
             checks = cfg["checks"]
             if "check-unused" in checks:
                 extra_args += ["--check-unused"]
-                metrics["check_unused"] = 1
             if "read-data" in checks:
                 extra_args += ["--read-data"]
-                metrics["read_data"] = 1
 
         commands = [
             ["restic", "-r", repo, "check"] + self.restic_args + extra_args
@@ -206,6 +206,13 @@ class ResticRunner:
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
+            metrics = {
+                "errors": 0,
+                "errors_data": 0,
+                "errors_snapshots": 0,
+                "read_data": 1 if "read_data" in extra_args else 0,
+                "check_unused": 1 if "--check-unused" in extra_args else 0,
+            }
             rc, output = process_infos["output"][-1]
             if rc > 0:
                 logger.warning(process_infos["output"])
@@ -229,7 +236,10 @@ class ResticRunner:
         cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
-            if process_infos["output"][-1][0] > 0:
+            rc = process_infos["output"][-1][0]
+            if rc > 0:
                 logger.warning(process_infos["output"])
+                metrics[repo] = {"rc": rc}
+                self.metrics["errors"] += 1
             else:
                 metrics[repo] = parse_stats(process_infos)
