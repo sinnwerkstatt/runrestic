@@ -211,7 +211,7 @@ def generate_lines(metrics: Dict[str, Any], name: str) -> Iterator[str]:
 
     for repo, mtrx in metrics.get("stats", {}).items():
         if mtrx["rc"] != 0:
-            yield f'restic_stats_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}'
+            yield f'restic_stats_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}\n'
         else:
             yield _restic_stats.format(name=name, repository=repo, **mtrx)
 
