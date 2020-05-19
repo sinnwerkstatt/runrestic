@@ -12,7 +12,7 @@ from runrestic.restic.output_parsing import (
     parse_prune,
     parse_stats,
 )
-from runrestic.restic.tools import MultiCommand, initialize_environment
+from runrestic.restic.tools import MultiCommand, initialize_environment, redact_password
 
 logger = logging.getLogger(__name__)
 
@@ -118,10 +118,10 @@ class ResticRunner:
             rc = process_infos["output"][-1][0]
             if rc > 0:
                 logger.warning(process_infos)
-                metrics[repo] = {"rc": rc}
+                metrics[redact_password(repo)] = {"rc": rc}
                 self.metrics["errors"] += 1
             else:
-                metrics[repo] = parse_backup(process_infos)
+                metrics[redact_password(repo)] = parse_backup(process_infos)
 
         # backup post_hooks
         if cfg.get("post_hooks"):
@@ -165,10 +165,10 @@ class ResticRunner:
             rc = process_infos["output"][-1][0]
             if rc > 0:
                 logger.warning(process_infos["output"])
-                metrics[repo] = {"rc": rc}
+                metrics[redact_password(repo)] = {"rc": rc}
                 self.metrics["errors"] += 1
             else:
-                metrics[repo] = parse_forget(process_infos)
+                metrics[redact_password(repo)] = parse_forget(process_infos)
 
     def prune(self) -> None:
         metrics = self.metrics["prune"] = {}
@@ -182,10 +182,10 @@ class ResticRunner:
             rc = process_infos["output"][-1][0]
             if rc > 0:
                 logger.warning(process_infos["output"])
-                metrics[repo] = {"rc": rc}
+                metrics[redact_password(repo)] = {"rc": rc}
                 self.metrics["errors"] += 1
             else:
-                metrics[repo] = parse_prune(process_infos)
+                metrics[redact_password(repo)] = parse_prune(process_infos)
 
     def check(self) -> None:
         self.metrics["check"] = {}
@@ -224,7 +224,7 @@ class ResticRunner:
                 metrics["errors"] = 1
             metrics["duration_seconds"] = process_infos["time"]
             metrics["rc"] = rc
-            self.metrics["check"][repo] = metrics
+            self.metrics["check"][redact_password(repo)] = metrics
 
     def stats(self) -> None:
         metrics = self.metrics["stats"] = {}
@@ -239,7 +239,7 @@ class ResticRunner:
             rc = process_infos["output"][-1][0]
             if rc > 0:
                 logger.warning(process_infos["output"])
-                metrics[repo] = {"rc": rc}
+                metrics[redact_password(repo)] = {"rc": rc}
                 self.metrics["errors"] += 1
             else:
-                metrics[repo] = parse_stats(process_infos)
+                metrics[redact_password(repo)] = parse_stats(process_infos)
