@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import jsonschema
 import pkg_resources
-import toml
 
 from runrestic import __version__
 from runrestic.runrestic.tools import deep_update
@@ -102,7 +101,7 @@ def configuration_file_paths() -> Sequence[str]:
 
         for filename in os.listdir(path):
             filename = os.path.join(path, filename)
-            if filename.endswith(".toml") and not os.path.isdir(filename):
+            if filename.endswith(('.json','.yaml','.yml','.toml')) and not os.path.isdir(filename):
                 octal_permissions = oct(os.stat(filename).st_mode)
                 if octal_permissions[-2:] != "00":  # file permissions are too broad
                     logger.warning(
@@ -122,7 +121,15 @@ def configuration_file_paths() -> Sequence[str]:
 def parse_configuration(config_filename: str) -> Dict[str, Any]:
     logger.debug(f"Parsing configuration file: {config_filename}")
     with open(config_filename) as file:
-        config = toml.load(file)
+        if config_filename.endswith('.json'):
+            import json
+            config = json.load(file)
+        if config_filename.endswith(('.yaml','.yml')):
+            import yaml
+            config = yaml.load(file)
+        if config_filename.endswith('.toml'):
+            import toml
+            config = toml.load(file)
 
     config = deep_update(CONFIG_DEFAULTS, dict(config))
 
