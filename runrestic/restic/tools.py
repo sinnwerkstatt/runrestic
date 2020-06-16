@@ -93,6 +93,6 @@ def initialize_environment(config: Dict[str, Any]) -> None:
         os.environ["XDG_CACHE_HOME"] = "/var/cache"
 
 
-def redact_password(repo_str: str) -> str:
-    re_repo = re.compile(r"(^(?:[s]?ftp:|rest:http[s]?:|s3:http[s]?:).*?:)(\S+)(@.*$)")
-    return re_repo.sub(r"\1?????\3", repo_str)
+def redact_password(repo_str: str, pw_replacement: str) -> str:
+    re_repo = re.compile(r"(^(?:[s]?ftp:|rest:http[s]?:|s3:http[s]?:).*?):(\S+)(@.*$)")
+    return re_repo.sub(fr"\1:{pw_replacement}\3", repo_str) if pw_replacement else re_repo.sub(r"\1\3", repo_str)
