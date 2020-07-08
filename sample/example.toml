@@ -28,6 +28,7 @@ sources = [
 
 exclude_patterns = ['pg_stats_tmp/']
 # exclude_files = []
+# exclude_if_present = []
 
 pre_hooks = ["systemctl stop postgresql"]
 post_hooks = ["systemctl start postgresql"]
