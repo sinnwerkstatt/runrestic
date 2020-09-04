@@ -97,6 +97,8 @@ class ResticRunner:
 
         # actual backup
         extra_args: List[str] = []
+        for files_from in cfg.get("files-from", []):
+            extra_args += ["--files-from", files_from]
         for exclude_pattern in cfg.get("exclude_patterns", []):
             extra_args += ["--exclude", exclude_pattern]
         for exclude_file in cfg.get("exclude_files", []):

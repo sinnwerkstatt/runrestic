@@ -59,6 +59,7 @@
           "minItems": 1,
           "uniqueItems": true
         },
+        "files-from": {"type": "array", "items": {"type": "string"}},
         "exclude_patterns": {"type": "array", "items": {"type": "string"}},
         "exclude_files": {"type": "array", "items": {"type": "string"}},
         "pre_hooks": {"type": "array", "items": {"type": "string"}},
