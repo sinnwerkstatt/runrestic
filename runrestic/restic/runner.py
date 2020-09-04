@@ -97,7 +97,7 @@ class ResticRunner:
 
         # actual backup
         extra_args: List[str] = []
-        for files_from in cfg.get("files-from", []):
+        for files_from in cfg.get("files_from", []):
             extra_args += ["--files-from", files_from]
         for exclude_pattern in cfg.get("exclude_patterns", []):
             extra_args += ["--exclude", exclude_pattern]
@@ -108,7 +108,7 @@ class ResticRunner:
             ["restic", "-r", repo, "backup"]
             + self.restic_args
             + extra_args
-            + cfg.get("sources")
+            + cfg.get("sources", [])
             for repo in self.repos
         ]
         direct_abort_reasons = ["Fatal: unable to open config file"]
