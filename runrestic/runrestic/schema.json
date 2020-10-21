@@ -114,7 +114,8 @@
           "type": "object",
           "required": ["path"],
           "properties": {
-            "path": {"type": "string"}
+            "path": {"type": "string"},
+            "pw-replacement": {"type": "string"}
           }
         }
       }
