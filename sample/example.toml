@@ -46,3 +46,4 @@ checks = ["check-unused", "read-data"]
 
 [metrics.prometheus]
 path = "/var/lib/node_exporter/textfile_collector/runrestic.prom"
+# password_replacement = "XXX" # use this if you need to redact passwords from repos in the log file #39
