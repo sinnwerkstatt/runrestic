@@ -52,7 +52,7 @@ def retry_process(
         status["current_try"] = i + 1
         p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=shell)
         p.wait()
-        output = p.stdout.read().decode("UTF-8")
+        output = p.stdout.read().decode("UTF-8") if p.stdout else ""
         status["output"] += [(p.returncode, output)]
         if p.returncode == 0:
             break

@@ -24,8 +24,16 @@ def test_write_metrics(tmpdir):
             },
         },
         "forget": {
-            "repo1": {"removed_snapshots": "1", "duration_seconds": 3.2, "rc": 0,},
-            "repo2": {"removed_snapshots": "1", "duration_seconds": 3.3, "rc": 0,},
+            "repo1": {
+                "removed_snapshots": "1",
+                "duration_seconds": 3.2,
+                "rc": 0,
+            },
+            "repo2": {
+                "removed_snapshots": "1",
+                "duration_seconds": 3.3,
+                "rc": 0,
+            },
         },
         "prune": {
             "/tmp/restic-repo1": {

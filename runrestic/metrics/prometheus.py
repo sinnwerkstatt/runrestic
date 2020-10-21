@@ -187,15 +187,15 @@ def generate_lines(metrics: Dict[str, Any], name: str) -> Iterator[str]:
     yield _restic_general.format(name=name, **metrics)
 
     if metrics.get("backup"):
-        yield backup_metrics(metrics.get("backup"), name)
+        yield backup_metrics(metrics["backup"], name)
     if metrics.get("forget"):
-        yield str(forget_metrics(metrics.get("forget"), name))
+        yield str(forget_metrics(metrics["forget"], name))
     if metrics.get("prune"):
-        yield str(prune_metrics(metrics.get("prune"), name))
+        yield str(prune_metrics(metrics["prune"], name))
     if metrics.get("check"):
-        yield str(check_metrics(metrics.get("check"), name))
+        yield str(check_metrics(metrics["check"], name))
     if metrics.get("stats"):
-        yield str(stats_metrics(metrics.get("stats"), name))
+        yield str(stats_metrics(metrics["stats"], name))
 
 
 def backup_metrics(metrics: Dict[str, Any], name: str) -> str:
@@ -256,7 +256,7 @@ def check_metrics(metrics: Dict[str, Any], name: str) -> str:
     return retval
 
 
-def stats_metrics(metrics: Dict[str, Any], name: str) -> Iterator[str]:
+def stats_metrics(metrics: Dict[str, Any], name: str) -> str:
     retval = _restic_help_stats
     for repo, mtrx in metrics.items():
         if mtrx["rc"] != 0:
