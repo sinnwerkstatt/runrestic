@@ -50,9 +50,9 @@ def retry_process(
 
     for i in range(0, tries_total):
         status["current_try"] = i + 1
-        p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=shell)
+        p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=shell, encoding="UTF-8")
         p.wait()
-        output = p.stdout.read().decode("UTF-8") if p.stdout else ""
+        output = p.communicate()[0]
         status["output"] += [(p.returncode, output)]
         if p.returncode == 0:
             break
