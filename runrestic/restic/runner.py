@@ -11,6 +11,7 @@ from runrestic.restic.output_parsing import (
     parse_forget,
     parse_prune,
     parse_stats,
+    parse_new_prune,
 )
 from runrestic.restic.tools import MultiCommand, initialize_environment, redact_password
 
@@ -196,9 +197,15 @@ class ResticRunner:
                 metrics[redact_password(repo, self.pw_replacement)] = {"rc": rc}
                 self.metrics["errors"] += 1
             else:
-                metrics[redact_password(repo, self.pw_replacement)] = parse_prune(
-                    process_infos
-                )
+                try:
+                    metrics[redact_password(repo, self.pw_replacement)] = parse_prune(
+                        process_infos
+                    )
+                except IndexError:
+                    # assume we're dealing with restic >=0.12.0
+                    metrics[
+                        redact_password(repo, self.pw_replacement)
+                    ] = parse_new_prune(process_infos)
 
     def check(self) -> None:
         self.metrics["check"] = {}

@@ -137,6 +137,21 @@ restic_prune_removed_index_files{{config="{name}",repository="{repository}"}} {r
 restic_prune_duration_seconds{{config="{name}",repository="{repository}"}} {duration_seconds}
 restic_prune_rc{{config="{name}",repository="{repository}"}} {rc}
 """
+_restic_new_prune = """
+restic_prune_to_repack_blobs{{config="{name}",repository="{repository}"}} {to_repack_blobs}
+restic_prune_to_repack_bytes{{config="{name}",repository="{repository}"}} {to_repack_bytes}
+restic_prune_removed_blobs{{config="{name}",repository="{repository}"}} {removed_blobs}
+restic_prune_removed_bytes{{config="{name}",repository="{repository}"}} {removed_bytes}
+restic_prune_to_delete_blobs{{config="{name}",repository="{repository}"}} {to_delete_blobs}
+restic_prune_to_delete_bytes{{config="{name}",repository="{repository}"}} {to_delete_bytes}
+restic_prune_total_prune_blobs{{config="{name}",repository="{repository}"}} {total_prune_blobs}
+restic_prune_total_prune_bytes{{config="{name}",repository="{repository}"}} {total_prune_bytes}
+restic_prune_remaining_blobs{{config="{name}",repository="{repository}"}} {remaining_blobs}
+restic_prune_remaining_bytes{{config="{name}",repository="{repository}"}} {remaining_bytes}
+restic_prune_remaining_unused_size{{config="{name}",repository="{repository}"}} {remaining_unused_size}
+restic_prune_duration_seconds{{config="{name}",repository="{repository}"}} {duration_seconds}
+restic_prune_rc{{config="{name}",repository="{repository}"}} {rc}
+"""
 
 _restic_help_check = """
 # HELP restic_check_errors Boolean to tell if any error occured
@@ -240,7 +255,10 @@ def prune_metrics(metrics: Dict[str, Any], name: str) -> str:
                 f'restic_prune_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}\n'
             )
         else:
-            retval += _restic_prune.format(name=name, repository=repo, **mtrx)
+            try:
+                retval += _restic_prune.format(name=name, repository=repo, **mtrx)
+            except KeyError:
+                retval += _restic_new_prune.format(name=name, repository=repo, **mtrx)
     return retval
 
 

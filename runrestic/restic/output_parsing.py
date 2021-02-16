@@ -94,6 +94,44 @@ def parse_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def parse_new_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
+    rc, output = process_infos["output"][-1]
+
+    to_repack_blobs, to_repack_bytes = re.findall(
+        r"to repack:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
+    )[0]
+    removed_blobs, removed_bytes = re.findall(
+        r"this removes[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
+    )[0]
+    to_delete_blobs, to_delete_bytes = re.findall(
+        r"to delete:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
+    )[0]
+    total_prune_blobs, total_prune_bytes = re.findall(
+        r"total prune:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
+    )[0]
+    remaining_blobs, remaining_bytes = re.findall(
+        r"remaining:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
+    )[0]
+    remaining_unused_size = re.findall(
+        r"unused size after prune:[\s]+(-?[0-9.]+ ?[a-zA-Z]*B)", output
+    )[0]
+    return {
+        "to_repack_blobs": to_repack_blobs,
+        "to_repack_bytes": parse_size(to_repack_bytes),
+        "removed_blobs": removed_blobs,
+        "removed_bytes": parse_size(removed_bytes),
+        "to_delete_blobs": to_delete_blobs,
+        "to_delete_bytes": parse_size(to_delete_bytes),
+        "total_prune_blobs": total_prune_blobs,
+        "total_prune_bytes": parse_size(total_prune_bytes),
+        "remaining_blobs": remaining_blobs,
+        "remaining_bytes": parse_size(remaining_bytes),
+        "remaining_unused_size": parse_size(remaining_unused_size),
+        "duration_seconds": process_infos["time"],
+        "rc": rc,
+    }
+
+
 def parse_stats(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     rc, output = process_infos["output"][-1]
     stats_json = json.loads(output)
