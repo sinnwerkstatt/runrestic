@@ -80,6 +80,15 @@ If, however, you need to pass along arbitrary other flags you can now add them t
 runrestic backup -- --one-file-system
 ``` 
 
+### Restic shell
+
+To use the options defined in `runrestic` with `restic` (e.g. for a backup restore), you can use the `shell` action:
+```bash
+runrestic shell
+```
+
+If you are using multiple repositories or configurations, you can select one now.
+
 ### Prometheus / Grafana metrics
 [@d-matt](https://github.com/d-matt) created a nice dashboard for Grafana here: https://grafana.com/grafana/dashboards/11064/revisions
 
