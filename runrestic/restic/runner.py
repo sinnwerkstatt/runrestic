@@ -236,6 +236,7 @@ class ResticRunner:
             rc, output = process_infos["output"][-1]
             if rc > 0:
                 logger.warning(process_infos["output"])
+                self.metrics["errors"] += 1
             if "error: load <snapshot/" in output:
                 metrics["errors_snapshots"] = 1
                 metrics["errors"] = 1

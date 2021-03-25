@@ -112,10 +112,16 @@ sudo chmod +x /etc/cron.d/runrestic
 ```
 
 ## Changelog
+* v0.5.21
+    * fix issue where "check" does not count towards overall "errors"-metric
+
 * v**0.5**! Expect breaking changes.
     * metrics output is a bit different
     * see new `parallel` and `retry_*` options. 
 
+## Ansible
+
+@tabic wrote an ansible role, you can find it here: https://github.com/outwire/ansible-role-restic . (I have neither checked nor tested it.)
 
 ## Development
 
