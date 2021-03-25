@@ -109,6 +109,8 @@ class ResticRunner:
             extra_args += ["--exclude", exclude_pattern]
         for exclude_file in cfg.get("exclude_files", []):
             extra_args += ["--exclude-file", exclude_file]
+        for exclude_if_present in cfg.get("exclude_if_present", []):
+            extra_args += ["--exclude-if-present", exclude_if_present]
 
         commands = [
             ["restic", "-r", repo, "backup"]
