@@ -73,6 +73,7 @@ def test_possible_config_paths(tmpdir):
     os.environ["XDG_CONFIG_HOME"] = str(tmpdir)
     assert possible_config_paths() == [
         "/etc/runrestic.toml",
+        "/etc/runrestic.json",
         "/etc/runrestic",
         f"{tmpdir}/runrestic",
     ]

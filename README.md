@@ -124,7 +124,7 @@ sudo chmod +x /etc/cron.d/runrestic
 ```
 
 ## Changelog
-* v0.5.22
+* v0.5.23
   * support JSON config files.
 * v0.5.21
     * fix issue where "check" does not count towards overall "errors"-metric

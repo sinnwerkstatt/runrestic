@@ -103,7 +103,9 @@ def configuration_file_paths() -> Sequence[str]:
 
         for filename in os.listdir(path):
             filename = os.path.join(path, filename)
-            if (filename.endswith(".toml") or filename.endswith(".json")) and not os.path.isdir(filename):
+            if (
+                filename.endswith(".toml") or filename.endswith(".json")
+            ) and not os.path.isdir(filename):
                 octal_permissions = oct(os.stat(filename).st_mode)
                 if octal_permissions[-2:] != "00":  # file permissions are too broad
                     logger.warning(
@@ -123,7 +125,11 @@ def configuration_file_paths() -> Sequence[str]:
 def parse_configuration(config_filename: str) -> Dict[str, Any]:
     logger.debug(f"Parsing configuration file: {config_filename}")
     with open(config_filename) as file:
-        config = toml.load(file) if config_filename.endswith(".toml") else json.load(file)
+        config: Dict[str, Any] = (
+            toml.load(file)
+            if str(config_filename).endswith(".toml")
+            else json.load(file)
+        )
     config = deep_update(CONFIG_DEFAULTS, dict(config))
 
     if "name" not in config:
