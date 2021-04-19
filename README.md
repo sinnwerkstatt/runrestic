@@ -37,7 +37,7 @@ keep-last =  3
 keep-hourly =  5
 ```
 
-For a more comprehensive example see the [example.toml](https://github.com/sinnwerkstatt/runrestic/blob/master/sample/example.toml)
+Alternatively you can also just use JSON. For a more comprehensive example see the [example.toml](https://github.com/sinnwerkstatt/runrestic/blob/master/sample/example.toml)
  or check the [schema.json](https://github.com/sinnwerkstatt/runrestic/blob/master/runrestic/runrestic/schema.json)
 
 ## Getting started
@@ -61,6 +61,9 @@ Once you have `restic` and `runrestic` ready, you should put a config file in on
 - /etc/runrestic.toml
 - /etc/runrestic/*example*.toml
 - ~/.config/runrestic/*example*.toml
+- /etc/runrestic.json
+- /etc/runrestic/*example*.json
+- ~/.config/runrestic/*example*.json
 
 Afterwards, run 
 
@@ -121,6 +124,8 @@ sudo chmod +x /etc/cron.d/runrestic
 ```
 
 ## Changelog
+* v0.5.22
+  * support JSON config files.
 * v0.5.21
     * fix issue where "check" does not count towards overall "errors"-metric
 
