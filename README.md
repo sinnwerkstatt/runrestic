@@ -1,6 +1,6 @@
 ![python version](https://img.shields.io/badge/python-3.6+-blue.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![Travis (.com)](https://api.travis-ci.com/sinnwerkstatt/runrestic.svg?branch=master)
+![Travis (.com)](https://api.travis-ci.com/sinnwerkstatt/runrestic.svg?branch=main)
 ![PyPI](https://img.shields.io/pypi/v/runrestic)
 [![Stackshare: runrestic](https://img.shields.io/badge/stackshare-runrestic-068DFE.svg)](https://stackshare.io/runrestic)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/runrestic)
@@ -37,8 +37,8 @@ keep-last =  3
 keep-hourly =  5
 ```
 
-Alternatively you can also just use JSON. For a more comprehensive example see the [example.toml](https://github.com/sinnwerkstatt/runrestic/blob/master/sample/example.toml)
- or check the [schema.json](https://github.com/sinnwerkstatt/runrestic/blob/master/runrestic/runrestic/schema.json)
+Alternatively you can also just use JSON. For a more comprehensive example see the [example.toml](https://github.com/sinnwerkstatt/runrestic/blob/main/sample/example.toml)
+ or check the [schema.json](https://github.com/sinnwerkstatt/runrestic/blob/main/runrestic/runrestic/schema.json)
 
 ## Getting started
 
@@ -103,8 +103,8 @@ configure a job runner to invoke it periodically.
 
 #### systemd
 
-If you're using systemd instead of cron to run jobs, download the [sample systemd service file](https://raw.githubusercontent.com/sinnwerkstatt/runrestic/master/sample/systemd/runrestic.service)
-and the [sample systemd timer file](https://raw.githubusercontent.com/sinnwerkstatt/runrestic/master/sample/systemd/runrestic.timer).
+If you're using systemd instead of cron to run jobs, download the [sample systemd service file](https://raw.githubusercontent.com/sinnwerkstatt/runrestic/main/sample/systemd/runrestic.service)
+and the [sample systemd timer file](https://raw.githubusercontent.com/sinnwerkstatt/runrestic/main/sample/systemd/runrestic.timer).
 Then, from the directory where you downloaded them:
 
 ```bash
@@ -115,7 +115,7 @@ sudo systemctl start runrestic.timer
 
 #### cron
 
-If you're using cron, download the [sample cron file](https://raw.githubusercontent.com/sinnwerkstatt/runrestic/master/sample/cron/runrestic).
+If you're using cron, download the [sample cron file](https://raw.githubusercontent.com/sinnwerkstatt/runrestic/main/sample/cron/runrestic).
 Then, from the directory where you downloaded it:
 
 ```bash

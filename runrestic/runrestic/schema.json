@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/sinnwerkstatt/runrestic/master/runrestic/config/schema.json",
+  "$id": "https://raw.githubusercontent.com/sinnwerkstatt/runrestic/main/runrestic/config/schema.json",
   "title": "Runrestic Config",
   "description": "Schema for runrestic configuration files, written in TOML",
   "type": "object",
