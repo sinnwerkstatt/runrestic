@@ -1,6 +1,7 @@
 import logging
 import os
 import signal
+import sys
 from typing import Any, Dict, List
 
 from runrestic.restic.installer import restic_check
@@ -39,7 +40,7 @@ def configure_signals() -> None:
         signal.SIGUSR2,
     ]
 
-    [signal.signal(sig, kill_the_group) for sig in signals]
+    [signal.signal(sig, kill_the_group) for sig in signals]  # type: ignore
 
 
 def runrestic() -> None:
@@ -70,9 +71,14 @@ def runrestic() -> None:
         restic_shell(configs)
         return
 
+    # Track the results (number of errors) per config
+    result: List[int] = []
     for config in configs:
         runner = ResticRunner(config, args, extras)
-        runner.run()
+        result.append(runner.run())
+
+    if sum(result) > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
