@@ -38,7 +38,7 @@ class ResticRunner:
 
         initialize_environment(self.config["environment"])
 
-    def run(self) -> int:
+    def run(self) -> Any:
         start_time = time.time()
         actions = self.args.actions
 
