@@ -101,7 +101,7 @@ def parse_new_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
         r"to repack:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
     )[0]
     removed_blobs, removed_bytes = re.findall(
-        r"this removes[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
+        r"this removes[:]*[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
     )[0]
     to_delete_blobs, to_delete_bytes = re.findall(
         r"to delete:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
