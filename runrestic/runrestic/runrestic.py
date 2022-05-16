@@ -39,7 +39,7 @@ def configure_signals() -> None:
         signal.SIGUSR2,
     ]
 
-    [signal.signal(sig, kill_the_group) for sig in signals]
+    [signal.signal(sig, kill_the_group) for sig in signals]  # type: ignore
 
 
 def runrestic() -> None:

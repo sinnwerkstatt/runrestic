@@ -1,10 +1,10 @@
 import logging
 import os
-import time
 import re
+import time
 from concurrent.futures import Future
 from concurrent.futures.process import ProcessPoolExecutor
-from subprocess import PIPE, Popen, STDOUT
+from subprocess import PIPE, STDOUT, Popen
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 from runrestic.runrestic.tools import parse_time
@@ -29,6 +29,8 @@ class MultiCommand:
 
     def run(self) -> List[Dict[str, Any]]:
         for command in self.commands:
+            if isinstance(command, str):
+                command = [command]
             logger.debug(f'Spawning "{command}"')
             process = self.process_pool_executor.submit(
                 retry_process, command, self.config, self.abort_reasons
@@ -95,7 +97,7 @@ def initialize_environment(config: Dict[str, Any]) -> None:
 def redact_password(repo_str: str, pw_replacement: str) -> str:
     re_repo = re.compile(r"(^(?:[s]?ftp:|rest:http[s]?:|s3:http[s]?:).*?):(\S+)(@.*$)")
     return (
-        re_repo.sub(fr"\1:{pw_replacement}\3", repo_str)
+        re_repo.sub(rf"\1:{pw_replacement}\3", repo_str)
         if pw_replacement
         else re_repo.sub(r"\1\3", repo_str)
     )

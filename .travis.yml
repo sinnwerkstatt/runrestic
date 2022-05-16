@@ -8,6 +8,7 @@ python:
 
 before_install:
   - pip install poetry
+  - pip install types-pkg_resources types-requests types-toml
 
 install:
   - poetry install
