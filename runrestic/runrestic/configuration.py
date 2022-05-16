@@ -1,3 +1,4 @@
+"""Parse CLI arguments an read configuration files"""
 import json
 import logging
 import os
@@ -14,10 +15,18 @@ from runrestic.runrestic.tools import deep_update
 logger = logging.getLogger(__name__)
 
 CONFIG_DEFAULTS = {
-    "execution": {"parallel": False, "exit_on_error": True, "retry_count": 0}
+    "execution": {
+        "parallel": False,
+        "exit_on_error": True,
+        "retry_count": 0,
+    }
 }
 SCHEMA = json.load(
-    open(pkg_resources.resource_filename("runrestic", "runrestic/schema.json"), "r")
+    open(
+        pkg_resources.resource_filename("runrestic", "runrestic/schema.json"),
+        "r",
+        encoding="utf-8",
+    )
 )
 
 
@@ -58,6 +67,11 @@ def cli_arguments(args: Union[List[str], None] = None) -> Tuple[Namespace, List[
         help="Use an alternative configuration file",
     )
     parser.add_argument(
+        "--show-progress",
+        metavar="INTERVAL",
+        help="Updated interval in seconds for restic progress (default: None)",
+    )
+    parser.add_argument(
         "-v", "--version", action="version", version="%(prog)s " + __version__
     )
 
@@ -94,7 +108,7 @@ def configuration_file_paths() -> Sequence[str]:
     for path in possible_config_paths():
         path = os.path.realpath(path)
         if not os.access(path, os.R_OK):
-            logger.debug(f"No access to path {path}, skipping")
+            logger.debug("No access to path %s skipping", path)
             continue
 
         if not os.path.exists(path):
@@ -112,11 +126,12 @@ def configuration_file_paths() -> Sequence[str]:
                 octal_permissions = oct(os.stat(filename).st_mode)
                 if octal_permissions[-2:] != "00":  # file permissions are too broad
                     logger.warning(
-                        (
-                            f"NOT using {filename}.\n"
-                            f"File permissions are too open ({octal_permissions[-4:]}). "
-                            f"You should set it to 0600: `chmod 0600 {filename}`\n"
-                        )
+                        "NOT using %s.\n"
+                        "File permissions are too open (%s). "
+                        "You should set it to 0600: `chmod 0600 %s`\n",
+                        filename,
+                        octal_permissions[-4:],
+                        filename,
                     )
                     continue
 
@@ -126,8 +141,8 @@ def configuration_file_paths() -> Sequence[str]:
 
 
 def parse_configuration(config_filename: str) -> Dict[str, Any]:
-    logger.debug(f"Parsing configuration file: {config_filename}")
-    with open(config_filename) as file:
+    logger.debug("Parsing configuration file: %s", config_filename)
+    with open(config_filename, encoding="utf-8") as file:
         config: Dict[str, Any] = (
             toml.load(file)
             if str(config_filename).endswith(".toml")

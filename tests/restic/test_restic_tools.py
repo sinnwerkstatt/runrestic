@@ -1,10 +1,12 @@
+import logging
 import os
 import time
 
 from runrestic.restic.tools import (
-    retry_process,
     MultiCommand,
     initialize_environment,
+    redact_password,
+    retry_process,
 )
 
 
@@ -121,10 +123,52 @@ def test_run_multiple_commands_serial(tmpdir):
         assert [x[0] for x in cmd_ret["output"]] == exp
 
 
-def test_initialize_environment():
+def test_initialize_environment_pw_redact(caplog):
+    env = {"RESTIC_PASSWORD": "my$ecr3T"}
+    caplog.set_level(logging.DEBUG)
+    initialize_environment(env)
+    assert "RESTIC_PASSWORD=**********" in caplog.text
+    assert "my$ecr3T" not in caplog.text
+
+
+def test_initialize_environment_no_home(monkeypatch):
     env = {"TEST123": "xyz"}
-    os.environ["HOME"] = ""
-    assert os.environ.get("HOME") == ""
+    monkeypatch.setenv("HOME", "")
     initialize_environment(env)
     assert os.environ.get("TEST123") == "xyz"
     assert os.environ.get("XDG_CACHE_HOME") == "/var/cache"
+
+
+def test_initialize_environment_user(monkeypatch):
+    env = {"TEST456": "abc"}
+    monkeypatch.setenv("HOME", "/home/user")
+    monkeypatch.setenv("XDG_CACHE_HOME", "/home/user/.cache")
+    initialize_environment(env)
+    assert os.environ.get("TEST456") == "abc"
+    assert os.environ.get("XDG_CACHE_HOME") == "/home/user/.cache"
+
+
+def test_initialize_environment_root(monkeypatch):
+    env = {"TEST789": "qpr"}
+    monkeypatch.setenv("HOME", "/root")
+    monkeypatch.setenv("XDG_CACHE_HOME", "/root/.cache")
+    monkeypatch.setattr(os, "geteuid", lambda: 0)  # fake root
+    initialize_environment(env)
+    assert os.environ.get("TEST789") == "qpr"
+    assert os.environ.get("XDG_CACHE_HOME") == "/var/cache"
+
+
+def test_redact_password():
+    password = "my$ecr3T"
+    repo_strings = [
+        "ftp://user:{}@server.com",
+        "rest:http://user:{}@test1.something.org",
+        "rest:https://user:{}@a-123.what.us",
+        "s3:http://user:{}@lost.data.net",
+        "s3:https://user:{}@island.in.the.sun.co.uk",
+    ]
+    pw_replacement = "******"
+    for repo_str in repo_strings:
+        assert redact_password(
+            repo_str.format(password), pw_replacement
+        ) == repo_str.format(pw_replacement)

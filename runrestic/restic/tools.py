@@ -29,9 +29,7 @@ class MultiCommand:
 
     def run(self) -> List[Dict[str, Any]]:
         for command in self.commands:
-            if isinstance(command, str):
-                command = [command]
-            logger.debug(f'Spawning "{command}"')
+            logger.debug("Spawning %s", command)
             process = self.process_pool_executor.submit(
                 retry_process, command, self.config, self.abort_reasons
             )
@@ -41,34 +39,94 @@ class MultiCommand:
         return [process.result() for process in self.processes]
 
 
+def log_messages(process: Any, proc_cmd: str) -> str:
+    """Capture the process output and generate appropriate log messages
+
+    Parameters
+    ----------
+    process : Popen[str]  # this typing only works for Python >= 3.9
+        Subprocess instance
+    proc_cmd : str
+        Name of the executed command (as it should appear in the logs)
+
+    Returns
+    -------
+    str
+        Complete process output
+    """
+    output = ""
+    for log_out in process.stdout:
+        if log_out.strip():
+            output += log_out
+            if re.match(r"^critical|fatal", log_out, re.I):
+                proc_log_level = logging.CRITICAL
+            elif re.match(r"^error", log_out, re.I):
+                proc_log_level = logging.ERROR
+            elif re.match(r"^warning", log_out, re.I):
+                proc_log_level = logging.WARNING
+            elif re.match(
+                r"^unchanged\s+/", log_out, re.I
+            ):  # unchanged files in restic output
+                proc_log_level = logging.DEBUG
+            else:
+                proc_log_level = logging.INFO
+            logger.log(proc_log_level, "[%s] %s", proc_cmd, log_out.strip())
+    return output
+
+
 def retry_process(
-    cmd: List[str], config: Dict[str, Any], abort_reasons: Optional[List[str]] = None
+    cmd: Union[str, List[str]],
+    config: Dict[str, Any],
+    abort_reasons: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     start_time = time.time()
 
     shell = config.get("shell", False)
     tries_total = config.get("retry_count", 0) + 1
     status = {"current_try": 0, "tries_total": tries_total, "output": []}
-
+    if isinstance(cmd, list):
+        proc_cmd = cmd[0]
+    else:
+        proc_cmd = os.path.basename(cmd.split(" ", maxsplit=1)[0])
     for i in range(0, tries_total):
         status["current_try"] = i + 1
-        p = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=shell, encoding="UTF-8")
-        output = p.communicate()[0]
-        status["output"] += [(p.returncode, output)]
-        if p.returncode == 0:
+
+        with Popen(
+            cmd, stdout=PIPE, stderr=STDOUT, shell=shell, encoding="UTF-8"
+        ) as process:
+            output = log_messages(process, proc_cmd)
+        returncode = process.returncode
+        status["output"] += [(returncode, output)]
+        if returncode == 0:
             break
 
         if abort_reasons and any(
             [abort_reason in output for abort_reason in abort_reasons]
         ):
+            logger.error(
+                "Aborting '%s' because of %s",
+                proc_cmd,
+                [
+                    abort_reason
+                    for abort_reason in abort_reasons
+                    if abort_reason in output
+                ],
+            )
             break
-
         if config.get("retry_backoff"):
             if " " in config["retry_backoff"]:
                 duration, strategy = config["retry_backoff"].split(" ")
             else:
                 duration, strategy = config["retry_backoff"], None
             duration = parse_time(duration)
+            logger.info(
+                "Retry %s/%s command '%s' using %s strategy, duration = %s sec",
+                i + 1,
+                tries_total,
+                proc_cmd,
+                strategy,
+                duration,
+            )
 
             if strategy == "linear":
                 time.sleep(duration * (i + 1))
@@ -76,6 +134,13 @@ def retry_process(
                 time.sleep(duration << i)
             else:  # strategy = "static"
                 time.sleep(duration)
+        else:
+            logger.info(
+                "Retry %s/%s command '%s'",
+                i + 1,
+                tries_total,
+                proc_cmd,
+            )
 
     status["time"] = time.time() - start_time
     return status
@@ -86,7 +151,7 @@ def initialize_environment(config: Dict[str, Any]) -> None:
         os.environ[key] = value
         if key == "RESTIC_PASSWORD":
             value = "**********"
-        logger.debug(f"[Environment] {key}={value}")
+        logger.debug("[Environment] %s=%s", key, value)
 
     if os.geteuid() == 0:  # pragma: no cover; if user is root, we just use system cache
         os.environ["XDG_CACHE_HOME"] = "/var/cache"

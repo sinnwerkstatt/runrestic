@@ -1,5 +1,5 @@
-from argparse import Namespace
 import os
+from argparse import Namespace
 
 import pytest
 from toml import TomlDecodeError
@@ -14,22 +14,42 @@ from runrestic.runrestic.configuration import (
 
 def test_cli_arguments():
     assert cli_arguments([]) == (
-        Namespace(actions=[], config_file=None, dry_run=False, log_level="info"),
+        Namespace(
+            actions=[],
+            config_file=None,
+            dry_run=False,
+            log_level="info",
+            show_progress=None,
+        ),
         [],
     )
     assert cli_arguments(["-l", "debug"]) == (
-        Namespace(actions=[], config_file=None, dry_run=False, log_level="debug"),
+        Namespace(
+            actions=[],
+            config_file=None,
+            dry_run=False,
+            log_level="debug",
+            show_progress=None,
+        ),
         [],
     )
     assert cli_arguments(["backup"]) == (
         Namespace(
-            actions=["backup"], config_file=None, dry_run=False, log_level="info"
+            actions=["backup"],
+            config_file=None,
+            dry_run=False,
+            log_level="info",
+            show_progress=None,
         ),
         [],
     )
     assert cli_arguments(["backup", "--", "--one-file-system"]) == (
         Namespace(
-            actions=["backup"], config_file=None, dry_run=False, log_level="info"
+            actions=["backup"],
+            config_file=None,
+            dry_run=False,
+            log_level="info",
+            show_progress=None,
         ),
         ["--one-file-system"],
     )
@@ -99,7 +119,11 @@ def test_parse_configuration_good_conf(restic_minimal_good_conf):
         "name": "example.toml",
         "repositories": ["/tmp/restic-repo-1"],
         "environment": {"RESTIC_PASSWORD": "CHANGEME"},
-        "execution": {"exit_on_error": True, "parallel": False, "retry_count": 0},
+        "execution": {
+            "exit_on_error": True,
+            "parallel": False,
+            "retry_count": 0,
+        },
         "backup": {"sources": ["/etc"]},
         "prune": {"keep-last": 10},
     }

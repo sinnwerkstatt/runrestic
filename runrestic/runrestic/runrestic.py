@@ -1,3 +1,4 @@
+"""Runrestic main module"""
 import logging
 import os
 import signal
@@ -29,7 +30,7 @@ def configure_logging(level: str) -> None:
 
 
 def configure_signals() -> None:
-    def kill_the_group(signal_number: signal.Signals, frame: Any) -> None:
+    def kill_the_group(signal_number: signal.Signals, _frame: Any) -> None:
         os.killpg(os.getpgrp(), signal_number)
 
     signals = [
@@ -40,7 +41,7 @@ def configure_signals() -> None:
         signal.SIGUSR2,
     ]
 
-    [signal.signal(sig, kill_the_group) for sig in signals]  # type: ignore
+    _ = [signal.signal(sig, kill_the_group) for sig in signals]  # type: ignore
 
 
 def runrestic() -> None:
@@ -56,16 +57,18 @@ def runrestic() -> None:
     else:
         config_file_paths = list(configuration_file_paths())
 
-        if not len(config_file_paths):
+        if not config_file_paths:
             raise FileNotFoundError(
                 f"Error: No configuration files found in {possible_config_paths()}"
             )
 
     configs: List[Dict[str, Any]] = []
-    for c in config_file_paths:
-        parsed_cfg = parse_configuration(c)
+    for config in config_file_paths:
+        parsed_cfg = parse_configuration(config)
         if parsed_cfg:
             configs += [parsed_cfg]
+    if args.show_progress:
+        os.environ["RESTIC_PROGRESS_FPS"] = str(1 / float(args.show_progress))
 
     if "shell" in args.actions:
         restic_shell(configs)

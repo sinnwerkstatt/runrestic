@@ -83,6 +83,18 @@ If, however, you need to pass along arbitrary other flags you can now add them t
 runrestic backup -- --one-file-system
 ```
 
+#### Logs for restic and hooks
+
+The output of `restic` and the configured pre/post-hooks is added to the `runrestic` logs at the level defined in
+`[execution] proc_log_level` (default: DEBUG), which can be overwritten with the CLI option `-p/--proc-log-level`.
+
+For process log levels greater than `INFO` the output of file names is suppressed and for log levels greater than WARNING
+`restic` is executed with the `--quiet` option. If the process log level is set to `DEBUG`, then restic is executed
+with the `--verbose` option.
+
+It is also possible to add `restic` progress messages to the logs by using the CLI option `--show-progress INTERVAL`
+where the `INTERVAL` is the number of seconds between the progress messages.
+
 ### Restic shell
 
 To use the options defined in `runrestic` with `restic` (e.g. for a backup restore), you can use the `shell` action:
@@ -126,6 +138,9 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ## Changelog
 
+- v0.5.26
+  - Add output messages from `restic` and pre/post-hook commands to runrestic logs.
+  - New CLI argument `--show-progress INTERVAL` for the restic progress update interval in seconds (default None)
 - v0.5.25
   - Drop support for Python 3.6, add support for Python 3.9 and 3.10, update dependencies
 - v0.5.24
