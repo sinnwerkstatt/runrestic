@@ -124,6 +124,9 @@ sudo chmod +x /etc/cron.d/runrestic
 ```
 
 ## Changelog
+
+* v0.5.24
+  * Exit the script with returncode = 1 if there was an error in any of the tasks
 * v0.5.23
   * support JSON config files.
 * v0.5.21

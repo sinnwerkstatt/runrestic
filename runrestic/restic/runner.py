@@ -38,7 +38,7 @@ class ResticRunner:
 
         initialize_environment(self.config["environment"])
 
-    def run(self) -> None:
+    def run(self) -> Any:
         start_time = time.time()
         actions = self.args.actions
 
@@ -69,6 +69,8 @@ class ResticRunner:
 
         if self.log_metrics:
             write_metrics(self.metrics, self.config)
+
+        return self.metrics["errors"]
 
     def init(self) -> None:
         commands = [

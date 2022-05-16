@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from argparse import ArgumentParser, Namespace
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Sequence, Tuple, Union
 
 import jsonschema
 import pkg_resources
@@ -93,6 +93,9 @@ def configuration_file_paths() -> Sequence[str]:
     paths: List[str] = []
     for path in possible_config_paths():
         path = os.path.realpath(path)
+        if not os.access(path, os.R_OK):
+            logger.debug(f"No access to path {path}, skipping")
+            continue
 
         if not os.path.exists(path):
             continue
