@@ -1,9 +1,10 @@
-#dist: bionic
+dist: bionic
 language: python
 python:
-  - "3.6"
   - "3.7"
   - "3.8"
+  - "3.9"
+  - "3.10"
 #  - "pypy3" lets not do pypy right now
 
 before_install:

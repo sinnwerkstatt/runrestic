@@ -11,4 +11,5 @@ __pycache__/
 .mypy_cache/
 .pytest_cache/
 dist/
+build/
 .venv

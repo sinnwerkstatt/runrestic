@@ -8,12 +8,12 @@ here = os.path.abspath(os.path.dirname(__file__))
 readme_path = os.path.join(here, "README.md")
 
 setup(
-    long_description=open(readme_path, "r").read(),
+    long_description=open(readme_path, "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     name="runrestic",
-    version="0.5.24",
+    version="0.5.25",
     description="A wrapper script for Restic backup software that inits, creates, prunes and checks backups",
-    python_requires=">=3.6.0",
+    python_requires=">=3.7.0",
     project_urls={
         "homepage": "https://github.com/sinnwerkstatt/runrestic",
         "repository": "https://github.com/sinnwerkstatt/runrestic",
@@ -40,5 +40,5 @@ setup(
         "runrestic.runrestic",
     ],
     package_data={"runrestic.runrestic": ["*.json"]},
-    install_requires=["jsonschema>=3.0", "toml>=0.10", "requests>=2.19"],
+    install_requires=["jsonschema>=3.2", "toml>=0.10.2", "requests>=2.27.1"],
 )
