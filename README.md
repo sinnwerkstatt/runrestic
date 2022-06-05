@@ -183,6 +183,17 @@ poetry install
 poetry run pytest
 ```
 
+### Using VScode devcontainer
+
+The project contains a `.devcontainer` folder with the settings for VScode to [develop inside container](https://code.visualstudio.com/docs/remote/containers). The Python virtual environment
+created by poetry is stored outside the container in the projects path `.virtualenvs` so that it survives container rebuilds.
+
+The Ubuntu 22.04 based container uses Python 3.10 as system version and includes minimal Python 3.7, 3.8 and 3.9 versions
+for creating virtual environments in any of those versions.
+
+It is possible to switch the Python version used by `poetry` with the command `poetry use <version>`,
+see [poetry managing environments](https://python-poetry.org/docs/managing-environments/) for more details.
+
 # Thanks
 
 This project was initially based on [borgmatic](https://github.com/witten/borgmatic/) but has since evolved into something else.
