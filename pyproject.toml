@@ -29,10 +29,13 @@ black = { version = "*", allow-prereleases = true }
 mypy = "*"
 pytest = "*"
 pytest-cov = "*"
+pytest-subprocess = "*"
+types-pkg_resources = "*"
+types-requests = "*"
+types-toml = "*"
 
 [tool.poetry.scripts]
 runrestic = 'runrestic.runrestic.runrestic:runrestic'
-
 
 [tool.black]
 line-length = 88
