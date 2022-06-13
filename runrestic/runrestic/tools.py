@@ -19,14 +19,14 @@ def parse_size(size: str) -> float:
     number, unit = re_bytes.findall(size)[0]
     units = {
         "B": 1,
-        "kB": 10 ** 3,
-        "MB": 10 ** 6,
-        "GB": 10 ** 9,
-        "TB": 10 ** 12,
+        "kB": 10**3,
+        "MB": 10**6,
+        "GB": 10**9,
+        "TB": 10**12,
         "KiB": 1024,
-        "MiB": 2 ** 20,
-        "GiB": 2 ** 30,
-        "TiB": 2 ** 40,
+        "MiB": 2**20,
+        "GiB": 2**30,
+        "TiB": 2**40,
     }
     return float(number) * units[unit]
 

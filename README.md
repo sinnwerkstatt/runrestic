@@ -1,4 +1,4 @@
-![python version](https://img.shields.io/badge/python-3.6+-blue.svg)
+![python version](https://img.shields.io/badge/python-3.7+-blue.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Travis (.com)](https://api.travis-ci.com/sinnwerkstatt/runrestic.svg?branch=main)
 ![PyPI](https://img.shields.io/pypi/v/runrestic)
@@ -38,11 +38,12 @@ keep-hourly =  5
 ```
 
 Alternatively you can also just use JSON. For a more comprehensive example see the [example.toml](https://github.com/sinnwerkstatt/runrestic/blob/main/sample/example.toml)
- or check the [schema.json](https://github.com/sinnwerkstatt/runrestic/blob/main/runrestic/runrestic/schema.json)
+or check the [schema.json](https://github.com/sinnwerkstatt/runrestic/blob/main/runrestic/runrestic/schema.json)
 
 ## Getting started
 
 ### Installing runrestic and restic
+
 To install **runrestic**, run the following command to download and install it:
 
 ```bash
@@ -50,22 +51,20 @@ sudo pip3 install --upgrade runrestic
 ```
 
 <br>
-
 You can either manually download and install [Restic](https://restic.net/) or you can just run `runrestic` and it'll try to download it for you.
-
 
 ### Initializing and running
 
 Once you have `restic` and `runrestic` ready, you should put a config file in on of the scanned locations, namely:
 
 - /etc/runrestic.toml
-- /etc/runrestic/*example*.toml
-- ~/.config/runrestic/*example*.toml
+- /etc/runrestic/_example_.toml
+- ~/.config/runrestic/_example_.toml
 - /etc/runrestic.json
-- /etc/runrestic/*example*.json
-- ~/.config/runrestic/*example*.json
+- /etc/runrestic/_example_.json
+- ~/.config/runrestic/_example_.json
 
-Afterwards, run 
+Afterwards, run
 
 ```bash
 runrestic init # to initialize all the repos in `repositories`
@@ -78,14 +77,16 @@ runrestic [action]
 <br>
 Certain `restic` flags like `--dry-run/-n` are built into `runrestic` as well and will be passed to restic where applicable.
 
-If, however, you need to pass along arbitrary other flags you can now add them to the end of your `runrestic` call like so: 
+If, however, you need to pass along arbitrary other flags you can now add them to the end of your `runrestic` call like so:
+
 ```bash
 runrestic backup -- --one-file-system
-``` 
+```
 
 ### Restic shell
 
 To use the options defined in `runrestic` with `restic` (e.g. for a backup restore), you can use the `shell` action:
+
 ```bash
 runrestic shell
 ```
@@ -93,13 +94,13 @@ runrestic shell
 If you are using multiple repositories or configurations, you can select one now.
 
 ### Prometheus / Grafana metrics
+
 [@d-matt](https://github.com/d-matt) created a nice dashboard for Grafana here: https://grafana.com/grafana/dashboards/11064/revisions
 
 ### systemd timer or cron
 
 If you want to run runrestic automatically, say once a day, the you can
 configure a job runner to invoke it periodically.
-
 
 #### systemd
 
@@ -125,16 +126,19 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ## Changelog
 
-* v0.5.24
-  * Exit the script with returncode = 1 if there was an error in any of the tasks
-* v0.5.23
-  * support JSON config files.
-* v0.5.21
-    * fix issue where "check" does not count towards overall "errors"-metric
+- v0.5.25
+  - Drop support for Python 3.6, add support for Python 3.9 and 3.10, update dependencies
+- v0.5.24
+  - Exit the script with returncode = 1 if there was an error in any of the tasks
+- v0.5.23
+  - support JSON config files.
+- v0.5.21
 
-* v**0.5**! Expect breaking changes.
-    * metrics output is a bit different
-    * see new `parallel` and `retry_*` options. 
+  - fix issue where "check" does not count towards overall "errors"-metric
+
+- v**0.5**! Expect breaking changes.
+  - metrics output is a bit different
+  - see new `parallel` and `retry_*` options.
 
 ## Ansible
 
@@ -145,6 +149,7 @@ sudo chmod +x /etc/cron.d/runrestic
 This project is managed with [poetry](https://python-poetry.org/)
 
 [Install it](https://github.com/python-poetry/poetry#installation) if not already present:
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 # or
@@ -152,6 +157,7 @@ pip install --user poetry
 ```
 
 ### Installing dependencies
+
 ```bash
 poetry install
 ```
@@ -163,4 +169,5 @@ poetry run pytest
 ```
 
 # Thanks
+
 This project was initially based on [borgmatic](https://github.com/witten/borgmatic/) but has since evolved into something else.
