@@ -84,8 +84,8 @@ def possible_config_paths() -> Sequence[str]:
     return [
         "/etc/runrestic.toml",
         "/etc/runrestic.json",
-        "/etc/runrestic",
-        f"{user_config_directory}/runrestic",
+        "/etc/runrestic/",
+        f"{user_config_directory}/runrestic/",
     ]
 
 

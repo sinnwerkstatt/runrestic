@@ -74,8 +74,8 @@ def test_possible_config_paths(tmpdir):
     assert possible_config_paths() == [
         "/etc/runrestic.toml",
         "/etc/runrestic.json",
-        "/etc/runrestic",
-        f"{tmpdir}/runrestic",
+        "/etc/runrestic/",
+        f"{tmpdir}/runrestic/",
     ]
 
 
