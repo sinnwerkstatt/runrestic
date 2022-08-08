@@ -9,6 +9,9 @@ python:
 
 before_install:
   - pip install poetry
+  # Fix issue with Python 3.7 and 3.8 build failure caused by "setuptools"
+  #   AttributeError: type object 'Distribution' has no attribute '_finalize_feature_opts'
+  - pip install setuptools==60.8.2
 
 install:
   - poetry install
