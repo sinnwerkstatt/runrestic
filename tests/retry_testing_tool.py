@@ -2,7 +2,6 @@ import os
 import sys
 from datetime import date
 
-
 # python retry_testing_tool tries sleep infix directory
 
 

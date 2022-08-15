@@ -1,7 +1,8 @@
-from argparse import Namespace
 import json
 import logging
+import re
 import time
+from argparse import Namespace
 from datetime import datetime
 from typing import Any, Dict, List
 
@@ -9,9 +10,9 @@ from runrestic.metrics import write_metrics
 from runrestic.restic.output_parsing import (
     parse_backup,
     parse_forget,
+    parse_new_prune,
     parse_prune,
     parse_stats,
-    parse_new_prune,
 )
 from runrestic.restic.tools import MultiCommand, initialize_environment, redact_password
 
@@ -47,6 +48,7 @@ class ResticRunner:
         elif not actions:
             actions = ["backup", "prune", "check"]
 
+        logger.info("Starting '%s': %s", self.config["name"], actions)
         for action in actions:
             if action == "init":
                 self.init()
@@ -100,7 +102,7 @@ class ResticRunner:
             cmd_runs = MultiCommand(cfg["pre_hooks"], config=hooks_cfg).run()
             metrics["_restic_pre_hooks"] = {
                 "duration_seconds": sum([v["time"] for v in cmd_runs]),
-                "rc": sum(x["output"][-1][0] for x in cmd_runs),
+                "return_code": sum(x["output"][-1][0] for x in cmd_runs),
             }
 
         # actual backup
@@ -121,16 +123,21 @@ class ResticRunner:
             + cfg.get("sources", [])
             for repo in self.repos
         ]
-        direct_abort_reasons = ["Fatal: unable to open config file"]
+        direct_abort_reasons = [
+            "Fatal: unable to open config file",
+            "Fatal: wrong password",
+        ]
         cmd_runs = MultiCommand(
             commands, self.config["execution"], direct_abort_reasons
         ).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
-            rc = process_infos["output"][-1][0]
-            if rc > 0:
+            return_code = process_infos["output"][-1][0]
+            if return_code > 0:
                 logger.warning(process_infos)
-                metrics[redact_password(repo, self.pw_replacement)] = {"rc": rc}
+                metrics[redact_password(repo, self.pw_replacement)] = {
+                    "return_code": return_code
+                }
                 self.metrics["errors"] += 1
             else:
                 metrics[redact_password(repo, self.pw_replacement)] = parse_backup(
@@ -142,15 +149,23 @@ class ResticRunner:
             cmd_runs = MultiCommand(cfg["post_hooks"], config=hooks_cfg).run()
             metrics["_restic_post_hooks"] = {
                 "duration_seconds": sum(v["time"] for v in cmd_runs),
-                "rc": sum(x["output"][-1][0] for x in cmd_runs),
+                "return_code": sum(x["output"][-1][0] for x in cmd_runs),
             }
 
     def unlock(self) -> None:
+        direct_abort_reasons = [
+            "Fatal: unable to open config file",
+            "Fatal: wrong password",
+        ]
         commands = [
             ["restic", "-r", repo, "unlock"] + self.restic_args for repo in self.repos
         ]
 
-        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
+        cmd_runs = MultiCommand(
+            commands,
+            config=self.config["execution"],
+            abort_reasons=direct_abort_reasons,
+        ).run()
         for process_infos in cmd_runs:
             if process_infos["output"][-1][0] > 0:
                 logger.warning(process_infos["output"])
@@ -169,17 +184,27 @@ class ResticRunner:
             if key == "group-by":
                 extra_args += ["--group-by", value]
 
+        direct_abort_reasons = [
+            "Fatal: unable to open config file",
+            "Fatal: wrong password",
+        ]
         commands = [
             ["restic", "-r", repo, "forget"] + self.restic_args + extra_args
             for repo in self.repos
         ]
-        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
+        cmd_runs = MultiCommand(
+            commands,
+            config=self.config["execution"],
+            abort_reasons=direct_abort_reasons,
+        ).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
-            rc = process_infos["output"][-1][0]
-            if rc > 0:
+            return_code = process_infos["output"][-1][0]
+            if return_code > 0:
                 logger.warning(process_infos["output"])
-                metrics[redact_password(repo, self.pw_replacement)] = {"rc": rc}
+                metrics[redact_password(repo, self.pw_replacement)] = {
+                    "return_code": return_code
+                }
                 self.metrics["errors"] += 1
             else:
                 metrics[redact_password(repo, self.pw_replacement)] = parse_forget(
@@ -189,27 +214,37 @@ class ResticRunner:
     def prune(self) -> None:
         metrics = self.metrics["prune"] = {}
 
+        direct_abort_reasons = [
+            "Fatal: unable to open config file",
+            "Fatal: wrong password",
+        ]
         commands = [
             ["restic", "-r", repo, "prune"] + self.restic_args for repo in self.repos
         ]
-        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
+        cmd_runs = MultiCommand(
+            commands,
+            config=self.config["execution"],
+            abort_reasons=direct_abort_reasons,
+        ).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
-            rc = process_infos["output"][-1][0]
-            if rc > 0:
+            return_code = process_infos["output"][-1][0]
+            if return_code > 0:
                 logger.warning(process_infos["output"])
-                metrics[redact_password(repo, self.pw_replacement)] = {"rc": rc}
+                metrics[redact_password(repo, self.pw_replacement)] = {
+                    "return_code": return_code
+                }
                 self.metrics["errors"] += 1
             else:
                 try:
-                    metrics[redact_password(repo, self.pw_replacement)] = parse_prune(
-                        process_infos
-                    )
-                except IndexError:
-                    # assume we're dealing with restic >=0.12.0
                     metrics[
                         redact_password(repo, self.pw_replacement)
                     ] = parse_new_prune(process_infos)
+                except IndexError:
+                    # assume we're dealing with restic <0.12.0
+                    metrics[redact_password(repo, self.pw_replacement)] = parse_prune(
+                        process_infos
+                    )
 
     def check(self) -> None:
         self.metrics["check"] = {}
@@ -223,11 +258,19 @@ class ResticRunner:
             if "read-data" in checks:
                 extra_args += ["--read-data"]
 
+        direct_abort_reasons = [
+            "Fatal: unable to open config file",
+            "Fatal: wrong password",
+        ]
         commands = [
             ["restic", "-r", repo, "check"] + self.restic_args + extra_args
             for repo in self.repos
         ]
-        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
+        cmd_runs = MultiCommand(
+            commands,
+            config=self.config["execution"],
+            abort_reasons=direct_abort_reasons,
+        ).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
             metrics = {
@@ -237,8 +280,8 @@ class ResticRunner:
                 "read_data": 1 if "read_data" in extra_args else 0,
                 "check_unused": 1 if "--check-unused" in extra_args else 0,
             }
-            rc, output = process_infos["output"][-1]
-            if rc > 0:
+            return_code, output = process_infos["output"][-1]
+            if return_code > 0:
                 logger.warning(process_infos["output"])
                 self.metrics["errors"] += 1
             if "error: load <snapshot/" in output:
@@ -248,23 +291,36 @@ class ResticRunner:
                 metrics["errors_data"] = 1
                 metrics["errors"] = 1
             metrics["duration_seconds"] = process_infos["time"]
-            metrics["rc"] = rc
+            metrics["return_code"] = return_code
             self.metrics["check"][redact_password(repo, self.pw_replacement)] = metrics
 
     def stats(self) -> None:
         metrics = self.metrics["stats"] = {}
 
+        direct_abort_reasons = [
+            "Fatal: unable to open config file",
+            "Fatal: wrong password",
+        ]
+        # quiet and verbose arguments are mutually exclusive
+        verbose = re.compile(r"^--verbose")
+        quiet = [] if list(filter(verbose.match, self.restic_args)) else ["-q"]
         commands = [
-            ["restic", "-r", repo, "stats", "-q", "--json"] + self.restic_args
+            ["restic", "-r", repo, "stats", "--json"] + quiet + self.restic_args
             for repo in self.repos
         ]
-        cmd_runs = MultiCommand(commands, config=self.config["execution"]).run()
+        cmd_runs = MultiCommand(
+            commands,
+            config=self.config["execution"],
+            abort_reasons=direct_abort_reasons,
+        ).run()
 
         for repo, process_infos in zip(self.repos, cmd_runs):
-            rc = process_infos["output"][-1][0]
-            if rc > 0:
+            return_code = process_infos["output"][-1][0]
+            if return_code > 0:
                 logger.warning(process_infos["output"])
-                metrics[redact_password(repo, self.pw_replacement)] = {"rc": rc}
+                metrics[redact_password(repo, self.pw_replacement)] = {
+                    "return_code": return_code
+                }
                 self.metrics["errors"] += 1
             else:
                 metrics[redact_password(repo, self.pw_replacement)] = parse_stats(

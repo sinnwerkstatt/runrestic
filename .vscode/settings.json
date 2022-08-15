@@ -1,0 +1,13 @@
+{
+    "cSpell.words": [
+        "runrestic"
+    ],
+    "autoDocstring.docstringFormat": "numpy",
+    "python.linting.pylintArgs": [
+        "--max-line-length=88"
+    ],
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": [
+        "-l 88"
+    ],
+}

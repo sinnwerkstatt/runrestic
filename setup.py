@@ -11,9 +11,9 @@ setup(
     long_description=open(readme_path, "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     name="runrestic",
-    version="0.5.25",
+    version="0.5.26",
     description="A wrapper script for Restic backup software that inits, creates, prunes and checks backups",
-    python_requires=">=3.7.0",
+    python_requires=">=3.7.0,<4.0",
     project_urls={
         "homepage": "https://github.com/sinnwerkstatt/runrestic",
         "repository": "https://github.com/sinnwerkstatt/runrestic",
