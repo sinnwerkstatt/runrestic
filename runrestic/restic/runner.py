@@ -102,7 +102,7 @@ class ResticRunner:
             cmd_runs = MultiCommand(cfg["pre_hooks"], config=hooks_cfg).run()
             metrics["_restic_pre_hooks"] = {
                 "duration_seconds": sum([v["time"] for v in cmd_runs]),
-                "return_code": sum(x["output"][-1][0] for x in cmd_runs),
+                "rc": sum(x["output"][-1][0] for x in cmd_runs),
             }
 
         # actual backup
@@ -136,7 +136,7 @@ class ResticRunner:
             if return_code > 0:
                 logger.warning(process_infos)
                 metrics[redact_password(repo, self.pw_replacement)] = {
-                    "return_code": return_code
+                    "rc": return_code
                 }
                 self.metrics["errors"] += 1
             else:
@@ -149,7 +149,7 @@ class ResticRunner:
             cmd_runs = MultiCommand(cfg["post_hooks"], config=hooks_cfg).run()
             metrics["_restic_post_hooks"] = {
                 "duration_seconds": sum(v["time"] for v in cmd_runs),
-                "return_code": sum(x["output"][-1][0] for x in cmd_runs),
+                "rc": sum(x["output"][-1][0] for x in cmd_runs),
             }
 
     def unlock(self) -> None:
@@ -203,7 +203,7 @@ class ResticRunner:
             if return_code > 0:
                 logger.warning(process_infos["output"])
                 metrics[redact_password(repo, self.pw_replacement)] = {
-                    "return_code": return_code
+                    "rc": return_code
                 }
                 self.metrics["errors"] += 1
             else:
@@ -232,7 +232,7 @@ class ResticRunner:
             if return_code > 0:
                 logger.warning(process_infos["output"])
                 metrics[redact_password(repo, self.pw_replacement)] = {
-                    "return_code": return_code
+                    "rc": return_code
                 }
                 self.metrics["errors"] += 1
             else:
@@ -291,7 +291,7 @@ class ResticRunner:
                 metrics["errors_data"] = 1
                 metrics["errors"] = 1
             metrics["duration_seconds"] = process_infos["time"]
-            metrics["return_code"] = return_code
+            metrics["rc"] = return_code
             self.metrics["check"][redact_password(repo, self.pw_replacement)] = metrics
 
     def stats(self) -> None:
@@ -319,7 +319,7 @@ class ResticRunner:
             if return_code > 0:
                 logger.warning(process_infos["output"])
                 metrics[redact_password(repo, self.pw_replacement)] = {
-                    "return_code": return_code
+                    "rc": return_code
                 }
                 self.metrics["errors"] += 1
             else:
