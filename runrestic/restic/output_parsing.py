@@ -17,7 +17,7 @@ def parse_backup(process_infos: Dict[str, Any]) -> Dict[str, Any]:
         r"Dirs:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified", output
     )[0]
     added_to_the_repo = re.findall(
-        r"Added to the repo:\s+(-?[0-9.]+ [a-zA-Z]*B)", output
+        r"Added to the repo(?:sitory)?:\s+(-?[0-9.]+ [a-zA-Z]*B)", output
     )[0]
     processed_files, processed_size, processed_time = re.findall(
         r"processed ([0-9]+) files,\s+(-?[0-9.]+ [a-zA-Z]*B) in ([0-9]+:+[0-9]+)",
