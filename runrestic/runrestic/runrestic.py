@@ -41,7 +41,7 @@ def configure_signals() -> None:
         signal.SIGUSR2,
     ]
 
-    _ = [signal.signal(sig, kill_the_group) for sig in signals]  # type: ignore
+    _ = [signal.signal(sig, kill_the_group) for sig in signals]  # type: ignore[arg-type]
 
 
 def runrestic() -> None:

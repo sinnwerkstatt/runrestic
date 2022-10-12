@@ -138,6 +138,9 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ## Changelog
 
+- v0.5.27
+  - Fix output parsing for new restic version 0.14.0
+  - Introduce failsafe output parser which supports default values
 - v0.5.26
   - Add output messages from `restic` and pre/post-hook commands to runrestic logs.
   - New CLI argument `--show-progress INTERVAL` for the restic progress update interval in seconds (default None)
