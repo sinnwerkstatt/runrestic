@@ -3,26 +3,35 @@ import logging
 import re
 from typing import Any, Dict
 
-from runrestic.runrestic.tools import parse_size, parse_time
+from runrestic.runrestic.tools import parse_line, parse_size, parse_time
 
 logger = logging.getLogger(__name__)
 
 
 def parse_backup(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     return_code, output = process_infos["output"][-1]
-    files_new, files_changed, files_unmodified = re.findall(
-        r"Files:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified", output
-    )[0]
-    dirs_new, dirs_changed, dirs_unmodified = re.findall(
-        r"Dirs:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified", output
-    )[0]
-    added_to_the_repo = re.findall(
-        r"Added to the repo(?:sitory)?:\s+(-?[0-9.]+ [a-zA-Z]*B)", output
-    )[0]
-    processed_files, processed_size, processed_time = re.findall(
+    logger.debug("Parsing backup output: %s", output)
+
+    files_new, files_changed, files_unmodified = parse_line(
+        r"Files:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified",
+        output,
+        ("0", "0", "0"),
+    )
+    dirs_new, dirs_changed, dirs_unmodified = parse_line(
+        r"Dirs:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified",
+        output,
+        ("0", "0", "0"),
+    )
+    added_to_the_repo = parse_line(
+        r"Added to the repo\w*:\s+(-?[0-9.]+ [a-zA-Z]*B)",
+        output,
+        "0 B",
+    )
+    processed_files, processed_size, processed_time = parse_line(
         r"processed ([0-9]+) files,\s+(-?[0-9.]+ [a-zA-Z]*B) in ([0-9]+:+[0-9]+)",
         output,
-    )[0]
+        ("0", "0 B", "00:00"),
+    )
 
     return {
         "files": {
@@ -48,9 +57,9 @@ def parse_backup(process_infos: Dict[str, Any]) -> Dict[str, Any]:
 
 def parse_forget(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     return_code, output = process_infos["output"][-1]
-    re_removed_snapshots = re.findall(r"remove ([0-9]+) snapshots", output)
+    re_removed_snapshots = parse_line(r"remove ([0-9]+) snapshots", output, "0")
     return {
-        "removed_snapshots": re_removed_snapshots[0] if re_removed_snapshots else 0,
+        "removed_snapshots": re_removed_snapshots,
         "duration_seconds": process_infos["time"],
         "rc": return_code,
     }
@@ -58,23 +67,28 @@ def parse_forget(process_infos: Dict[str, Any]) -> Dict[str, Any]:
 
 def parse_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     return_code, output = process_infos["output"][-1]
-    containing_packs, containing_blobs, containing_size = re.findall(
+    containing_packs, containing_blobs, containing_size = parse_line(
         r"repository contains ([0-9]+) packs \(([0-9]+) blobs\) with (-?[0-9.]+ ?[a-zA-Z]*B)",
         output,
-    )[0]
-    duplicate_blobs, duplicate_size = re.findall(
-        r"([0-9]+) duplicate blobs, (-?[0-9.]+ ?[a-zA-Z]*B) duplicate", output
-    )[0]
-    in_use_blobs, _, removed_blobs = re.findall(
+        ("0", "0", "0 B"),
+    )
+    duplicate_blobs, duplicate_size = parse_line(
+        r"([0-9]+) duplicate blobs, (-?[0-9.]+ ?[a-zA-Z]*B) duplicate",
+        output,
+        ("0", "0 B"),
+    )
+    in_use_blobs, _, removed_blobs = parse_line(
         r"found ([0-9]+) of ([0-9]+) data blobs still in use, removing ([0-9]+) blobs",
         output,
-    )[0]
-    invalid_files = re.findall(r"will remove ([0-9]+) invalid files", output)[0]
-    deleted_packs, rewritten_packs, size_freed = re.findall(
+        ("0", "0", "0"),
+    )
+    invalid_files = parse_line(r"will remove ([0-9]+) invalid files", output, ("0"))
+    deleted_packs, rewritten_packs, size_freed = parse_line(
         r"will delete ([0-9]+) packs and rewrite ([0-9]+) packs, this frees (-?[0-9.]+ ?[a-zA-Z]*B)",
         output,
-    )[0]
-    removed_index_files = re.findall(r"remove ([0-9]+) old index files", output)[0]
+        ("0", "0", "0 B"),
+    )
+    removed_index_files = parse_line(r"remove ([0-9]+) old index files", output, "0")
 
     return {
         "containing_packs_before": containing_packs,
@@ -97,24 +111,36 @@ def parse_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
 def parse_new_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     return_code, output = process_infos["output"][-1]
 
-    to_repack_blobs, to_repack_bytes = re.findall(
-        r"to repack:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
-    )[0]
-    removed_blobs, removed_bytes = re.findall(
-        r"this removes[:]*[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
-    )[0]
-    to_delete_blobs, to_delete_bytes = re.findall(
-        r"to delete:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
-    )[0]
-    total_prune_blobs, total_prune_bytes = re.findall(
-        r"total prune:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
-    )[0]
-    remaining_blobs, remaining_bytes = re.findall(
-        r"remaining:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)", output
-    )[0]
-    remaining_unused_size = re.findall(
-        r"unused size after prune:[\s]+(-?[0-9.]+ ?[a-zA-Z]*B)", output
-    )[0]
+    to_repack_blobs, to_repack_bytes = parse_line(
+        r"to repack:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)",
+        output,
+        ("0", "0 B"),
+    )
+    removed_blobs, removed_bytes = parse_line(
+        r"this removes[:]*[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)",
+        output,
+        ("0", "0 B"),
+    )
+    to_delete_blobs, to_delete_bytes = parse_line(
+        r"to delete:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)",
+        output,
+        ("0", "0 B"),
+    )
+    total_prune_blobs, total_prune_bytes = parse_line(
+        r"total prune:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)",
+        output,
+        ("0", "0 B"),
+    )
+    remaining_blobs, remaining_bytes = parse_line(
+        r"remaining:[\s]+([0-9]+) blobs / (-?[0-9.]+ ?[a-zA-Z]*B)",
+        output,
+        ("0", "0 B"),
+    )
+    remaining_unused_size = parse_line(
+        r"unused size after prune:[\s]+(-?[0-9.]+ ?[a-zA-Z]*B)",
+        output,
+        "0 B",
+    )
     return {
         "to_repack_blobs": to_repack_blobs,
         "to_repack_bytes": parse_size(to_repack_bytes),
@@ -134,10 +160,19 @@ def parse_new_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
 
 def parse_stats(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     return_code, output = process_infos["output"][-1]
-    stats_json = json.loads(re.findall(r"(\{.*\})", output, re.MULTILINE)[0])
-    return {
-        "total_file_count": stats_json["total_file_count"],
-        "total_size_bytes": stats_json["total_size"],
-        "duration_seconds": process_infos["time"],
-        "rc": return_code,
-    }
+    try:
+        stats_json = json.loads(re.findall(r"(\{.*\})", output, re.MULTILINE)[0])
+        return {
+            "total_file_count": stats_json["total_file_count"],
+            "total_size_bytes": stats_json["total_size"],
+            "duration_seconds": process_infos["time"],
+            "rc": return_code,
+        }
+    except KeyError as err:
+        logger.error("Key %s not found in output: %s", err, output)
+        return {
+            "total_file_count": 0,
+            "total_size_bytes": 0,
+            "duration_seconds": 0,
+            "rc": return_code,
+        }

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "runrestic"
-version = "0.5.26.1"
+version = "0.5.27"
 description = "A wrapper script for Restic backup software that inits, creates, prunes and checks backups"
 license = "GPL-3.0+"
 authors = [ "Andreas Nüßlein <andreas@nuessle.in>" ]

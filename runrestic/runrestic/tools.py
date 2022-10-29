@@ -1,5 +1,8 @@
+import logging
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Union
+
+logger = logging.getLogger(__name__)
 
 
 def make_size(size: int) -> str:
@@ -16,7 +19,11 @@ def make_size(size: int) -> str:
 
 def parse_size(size: str) -> float:
     re_bytes = re.compile(r"([0-9.]+) ?([a-zA-Z]*B)")
-    number, unit = re_bytes.findall(size)[0]
+    try:
+        number, unit = re_bytes.findall(size)[0]
+    except IndexError:
+        logger.error("Failed to parse size of '%s'", size)
+        return 0.0
     units = {
         "B": 1,
         "kB": 10**3,
@@ -33,7 +40,13 @@ def parse_size(size: str) -> float:
 
 def parse_time(time_str: str) -> int:
     re_time = re.compile(r"(?:([0-9]+):)?([0-9]+):([0-9]+)")
-    hours, minutes, seconds = (int(x) if x else 0 for x in re_time.findall(time_str)[0])
+    try:
+        hours, minutes, seconds = (
+            int(x) if x else 0 for x in re_time.findall(time_str)[0]
+        )
+    except IndexError:
+        logger.error("Failed to parse time of '%s'", time_str)
+        return 0
     if minutes:
         seconds += minutes * 60
     if hours:
@@ -52,3 +65,42 @@ def deep_update(base: Dict[Any, Any], update: Dict[Any, Any]) -> Dict[Any, Any]:
         else:
             new[key] = value
     return new
+
+
+def parse_line(  # type: ignore[no-untyped-def]
+    regex: str,
+    output: str,
+    default: Union[str, tuple],  # type: ignore[type-arg]
+):
+    r"""Parse line with provided regex and return matched variables.
+    If there is no match in the output, the variables will be unchanged
+    (with their defaults)
+
+    Parameters
+    ----------
+    regex : str
+        Regex to match the requested variables
+    output : str
+        Output text to be parsed
+    default: str or tuple
+        List of default values in case the regex parsing fails.
+
+    Returns
+    -------
+    str or tuple
+        Parsed result or default
+
+    Examples
+    --------
+    parse_line(
+        output=output,
+        regex=r"Files:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified",
+        ("0", "0", "0")
+    )
+    """
+    try:
+        parsed = re.findall(regex, output)[0]
+    except IndexError:
+        logger.error("No match in output for regex '%s'", regex)
+        return default
+    return parsed
