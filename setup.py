@@ -11,7 +11,7 @@ setup(
     long_description=open(readme_path, "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     name="runrestic",
-    version="0.5.27",
+    version="0.5.28",
     description="A wrapper script for Restic backup software that inits, creates, prunes and checks backups",
     python_requires=">=3.7.0,<4.0",
     project_urls={
@@ -41,7 +41,7 @@ setup(
     ],
     package_data={"runrestic.runrestic": ["*.json"]},
     install_requires=[
-        "jsonschema>=3.0,<4.0",
+        "jsonschema>=3.0",
         "requests>=2.27.1,<3.0.0",
         "toml>=0.10,<0.11",
     ],

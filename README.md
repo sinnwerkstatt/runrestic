@@ -138,6 +138,8 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ## Changelog
 
+- v0.5.28
+  - Allow jsonschema >= 4.0
 - v0.5.27
   - Fix output parsing for new restic version 0.14.0
   - Introduce failsafe output parser which supports default values
