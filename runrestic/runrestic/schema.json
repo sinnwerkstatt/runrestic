@@ -92,7 +92,7 @@
         "keep-monthly": {"type": "integer"},
         "keep-yearly": {"type": "integer"},
         "keep-within": {"type": "string"},
-        "keep-tag": {"type": "integer"},
+        "keep-tag": {"type": "string"},
         "group-by": {"type": "string"}
       }
     },
