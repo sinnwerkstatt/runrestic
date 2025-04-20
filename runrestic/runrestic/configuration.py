@@ -6,7 +6,10 @@ from argparse import ArgumentParser, Namespace
 from typing import Any, Dict, List, Sequence, Tuple, Union
 
 import jsonschema
-import pkg_resources
+try:
+    import importlib.resources as pkg_resources
+except ImportError:
+    import pkg_resources
 import toml
 
 from runrestic import __version__
@@ -21,12 +24,8 @@ CONFIG_DEFAULTS = {
         "retry_count": 0,
     }
 }
-SCHEMA = json.load(
-    open(
-        pkg_resources.resource_filename("runrestic", "runrestic/schema.json"),
-        "r",
-        encoding="utf-8",
-    )
+SCHEMA = json.loads(
+    pkg_resources.files("runrestic").joinpath("runrestic/schema.json").read_text(encoding="utf-8")
 )
 
 
