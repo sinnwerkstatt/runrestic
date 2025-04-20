@@ -138,6 +138,8 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ## Changelog
 
+- v0.5.29
+  - Support Python 3.12
 - v0.5.28
   - Allow jsonschema >= 4.0
 - v0.5.27
