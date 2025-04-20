@@ -140,6 +140,7 @@ sudo chmod +x /etc/cron.d/runrestic
 
 - v0.5.29
   - Support Python 3.12
+  - Updated devcontainer to Ubuntu 24.04 (noble)
 - v0.5.28
   - Allow jsonschema >= 4.0
 - v0.5.27
@@ -195,7 +196,7 @@ poetry run pytest
 The project contains a `.devcontainer` folder with the settings for VScode to [develop inside container](https://code.visualstudio.com/docs/remote/containers). The Python virtual environment
 created by poetry is stored outside the container in the projects path `.virtualenvs` so that it survives container rebuilds.
 
-The Ubuntu 22.04 based container uses Python 3.10 as system version and includes minimal Python 3.7, 3.8 and 3.9 versions
+The Ubuntu 24.04 based container uses Python 3.12 as system version and includes minimal Python 3.8 to 3.11 versions
 for creating virtual environments in any of those versions.
 
 It is possible to switch the Python version used by `poetry` with the command `poetry use <version>`,
