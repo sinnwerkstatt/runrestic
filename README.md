@@ -199,7 +199,7 @@ created by poetry is stored outside the container in the projects path `.virtual
 The Ubuntu 24.04 based container uses Python 3.12 as system version and includes minimal Python 3.8 to 3.11 versions
 for creating virtual environments in any of those versions.
 
-It is possible to switch the Python version used by `poetry` with the command `poetry use <version>`,
+It is possible to switch the Python version used by `poetry` with the command `poetry env use <version>`,
 see [poetry managing environments](https://python-poetry.org/docs/managing-environments/) for more details.
 
 # Thanks
