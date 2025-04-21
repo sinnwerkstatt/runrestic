@@ -3,10 +3,10 @@ import json
 import logging
 import os
 from argparse import ArgumentParser, Namespace
+from importlib.resources import open_text
 from typing import Any, Dict, List, Sequence, Tuple, Union
 
 import jsonschema
-import pkg_resources
 import toml
 
 from runrestic import __version__
@@ -21,13 +21,8 @@ CONFIG_DEFAULTS = {
         "retry_count": 0,
     }
 }
-SCHEMA = json.load(
-    open(
-        pkg_resources.resource_filename("runrestic", "runrestic/schema.json"),
-        "r",
-        encoding="utf-8",
-    )
-)
+with open_text("runrestic.runrestic", "schema.json", encoding="utf-8") as schema_file:
+    SCHEMA = json.load(schema_file)
 
 
 def cli_arguments(args: Union[List[str], None] = None) -> Tuple[Namespace, List[str]]:
