@@ -23,7 +23,7 @@ toml = "^0.10"
 jsonschema = ">3.0"
 requests = ">2.27.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 ipdb = "*"
 black = { version = "*", allow-prereleases = true }
 mypy = "*"
