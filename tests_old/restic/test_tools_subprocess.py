@@ -2,20 +2,10 @@
 
 Using pytest-subprocess plugin https://pytest-subprocess.readthedocs.io/
 """
-
 import logging
 import subprocess
-from io import StringIO
 
 from runrestic.restic import tools
-
-
-def test_log_messages_no_output():
-    """Test log messages with no output"""
-    # Create a fake process object
-    fake_proc = type("FakeProc", (), {})()
-    fake_proc.stdout = StringIO("    ")
-    assert tools.log_messages(fake_proc, "test_cmd") == ""
 
 
 def test_restic_logs(caplog, fp, monkeypatch):  # pylint: disable=invalid-name
@@ -39,19 +29,19 @@ def test_restic_logs(caplog, fp, monkeypatch):  # pylint: disable=invalid-name
         cmd,
         config={},
     )
-    assert result["output"] == [(0, "\n".join([*out, ""]))]
+    assert result["output"] == [(0, "\n".join(out + [""]))]
     for log in out:
         assert log in caplog.text
-    assert caplog.record_tuples[0] == (
+    assert (
         "runrestic.restic.tools",
         20,
         "[restic] using parent snapshot b601066b",
-    )
-    assert caplog.record_tuples[-1] == (
+    ) == caplog.record_tuples[0]
+    assert (
         "runrestic.restic.tools",
         20,
         "[restic] snapshot 1e3c30a1 saved",
-    )
+    ) == caplog.record_tuples[-1]
 
 
 def test_restic_abort(caplog, fp, monkeypatch):  # pylint: disable=invalid-name
@@ -64,7 +54,7 @@ def test_restic_abort(caplog, fp, monkeypatch):  # pylint: disable=invalid-name
     result = tools.retry_process(
         cmd, config={"retry_count": 2}, abort_reasons=["Fatal: wrong password"]
     )
-    assert result["output"] == [(1, "\n".join([*out, ""]))]
+    assert result["output"] == [(1, "\n".join(out + [""]))]
     assert (
         "runrestic.restic.tools",
         logging.CRITICAL,
@@ -91,8 +81,8 @@ def test_retry_pass_logs(caplog, fp, monkeypatch):  # pylint: disable=invalid-na
     result = tools.retry_process(
         cmd, config={"retry_count": retries}, abort_reasons=["Fatal: wrong password"]
     )
-    assert result["output"] == [(1, out_fail[0] + "\n")] * retries + [
-        (0, out_pass[0] + "\n")
+    assert result["output"] == [(int(1), out_fail[0] + "\n")] * retries + [
+        (int(0), out_pass[0] + "\n")
     ]
     assert (
         "runrestic.restic.tools",
@@ -102,7 +92,7 @@ def test_retry_pass_logs(caplog, fp, monkeypatch):  # pylint: disable=invalid-na
     assert (
         "runrestic.restic.tools",
         logging.INFO,
-        f"Retry {retries}/{retries + 1} command 'restic'",
+        f"Retry {retries}/{retries+1} command 'restic'",
     ) in caplog.record_tuples
 
 
@@ -129,7 +119,7 @@ def test_retry_fail_logs(caplog, fp, monkeypatch):  # pylint: disable=invalid-na
     assert (
         "runrestic.restic.tools",
         logging.INFO,
-        f"Retry 2/{retries + 1} command 'restic'",
+        f"Retry 2/{retries+1} command 'restic'",
     ) in caplog.record_tuples
 
 

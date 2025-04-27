@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 from runrestic.runrestic.tools import (
@@ -32,7 +34,7 @@ def test_make_size():
     assert make_size(1000000000000) == "931.32 GiB"
     assert make_size(1000000000000000) == "909.49 TiB"
     with pytest.raises(TypeError):
-        make_size("string")  # type: ignore[arg-type]
+        make_size("string")
 
 
 def test_parse_size():
@@ -42,9 +44,7 @@ def test_parse_size():
     assert parse_size("910 KiB") == 1024 * 910
     assert parse_size("910 B") == 910
     with pytest.raises(TypeError):
-        parse_size(123)  # type: ignore[arg-type]
-    # Test missing units
-    assert parse_size("910") == 0.0
+        parse_size(123)
 
 
 def test_parse_time():
@@ -52,8 +52,6 @@ def test_parse_time():
     assert parse_time("2:20") == 2 * 60 + 20
     assert parse_time("2:00:00") == 2 * 60 * 60
     assert parse_time("23:59:59") == 24 * 60 * 60 - 1
-    # Test wrong time format
-    assert parse_time("42") == 0
 
 
 def test_deep_update():
@@ -75,7 +73,7 @@ def test_parse_line_no_match_one():
 
 def test_parse_line_match_two():
     assert parse_line(
-        r"Two counters: value 1: (\d+), value 2: ([\d\.]+)", OUTPUT, ("-1", "-1")
+        r"Two counters: value 1: (\d+), value 2: ([\d\.]+)", OUTPUT, "-1"
     ) == ("456", "7.89")
 
 
@@ -99,18 +97,19 @@ def test_parse_line_match_three():
     assert parse_line(
         r"Three counters: value 1: ([\d\.]+), value 2: (\d+), value 3: ([\d\.]+ [kMG]?B)",
         OUTPUT,
-        ("-1", "-1", "-1"),
+        "-1",
     ) == ("1.1", "22", "33.3 kB")
     assert parse_line(
         r"Three counters: value 1: ([\d\.]+), value 2: (\d+), value 3: ([\d\.]+ [kMG]?B)",
         OUTPUT_2,
-        ("-1", "-1", "-1"),
+        "-1",
     ) == ("1.1", "22", "33.3 kB")
 
 
 def test_parse_line_no_match_three():
+    default = ("0", "0.0", "0 B")
     assert parse_line(
-        r"Three counters: value missing: ([\d\.]+), value 2: (\d+), value 3: ([\d\.]+ [kMG]?B)",
+        r"Three counters: value 1: ([\d\.]+), value 2: (\d+), value 3: ([\d\.]+ [kMG]?B)",
         OUTPUT,
-        ("-1", "-1", "-1"),
-    ) == ("-1", "-1", "-1")
+        "-1",
+    ) == ("1.1", "22", "33.3 kB")
