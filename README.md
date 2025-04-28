@@ -138,6 +138,13 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ## Changelog
 
+- v0.5.30
+  - Fix metric setting in restic runner for "check"
+  - Support Python 3.13
+    - Add Python 3.13 in devcontainer so that it can be used for testing
+    - Updated Poetry lock
+  - Enhance test coverage
+    - Modified restic tools test to use mock file operations and shortened retry times for faster test execution
 - v0.5.29
   - Support Python 3.12
   - Updated devcontainer to Ubuntu 24.04 (noble)
