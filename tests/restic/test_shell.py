@@ -6,6 +6,12 @@ from runrestic.restic import shell
 
 
 class TestResticShell(TestCase):
+    def setUp(self) -> None:
+        # Define the environment variable for testing
+        if not os.environ.get("SHELL"):
+            # Set a default shell for the test environment
+            os.environ["SHELL"] = "/bin/bash"
+
     @patch("runrestic.restic.shell.logger")
     @patch("runrestic.restic.shell.sys.exit")
     def test_restic_shell_single_repo(self, mock_sys_exit, mock_logger):
