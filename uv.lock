@@ -986,7 +986,7 @@ wheels = [
 
 [[package]]
 name = "runrestic"
-version = "0.0.1"
+version = "0.5.31"
 source = { editable = "." }
 dependencies = [
     { name = "jsonschema" },
