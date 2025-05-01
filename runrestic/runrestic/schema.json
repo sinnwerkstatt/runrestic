@@ -1,125 +1,244 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://raw.githubusercontent.com/sinnwerkstatt/runrestic/main/runrestic/config/schema.json",
-  "title": "Runrestic Config",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Schema for runrestic configuration files, written in TOML",
-  "type": "object",
+  "properties": {
+    "backup": {
+      "oneOf": [
+        {
+          "required": [
+            "sources"
+          ]
+        },
+        {
+          "required": [
+            "files_from"
+          ]
+        }
+      ],
+      "properties": {
+        "continue_on_pre_hooks_error": {
+          "default": false,
+          "type": "boolean"
+        },
+        "exclude_files": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "exclude_if_present": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "exclude_patterns": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "files_from ": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "post_hooks": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pre_hooks": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "sources": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "type": "object"
+    },
+    "check": {
+      "properties": {
+        "checks": {
+          "default": [
+            "check-unused",
+            "read-data"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "environment": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "oneOf": [
+        {
+          "required": [
+            "RESTIC_PASSWORD"
+          ]
+        },
+        {
+          "required": [
+            "RESTIC_PASSWORD_FILE"
+          ]
+        }
+      ],
+      "properties": {
+        "RESTIC_PASSWORD": {
+          "type": "string"
+        },
+        "RESTIC_PASSWORD_FILE": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "execution": {
+      "properties": {
+        "exit_on_error": {
+          "default": true,
+          "type": "boolean"
+        },
+        "parallel": {
+          "default": false,
+          "type": "boolean"
+        },
+        "retry_backoff": {
+          "type": "string"
+        },
+        "retry_count": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "metrics": {
+      "properties": {
+        "prometheus": {
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "pw-replacement": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ],
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "name": {
+      "type": "string"
+    },
+    "prune": {
+      "anyOf": [
+        {
+          "required": [
+            "keep-last"
+          ]
+        },
+        {
+          "required": [
+            "keep-hourly"
+          ]
+        },
+        {
+          "required": [
+            "keep-daily"
+          ]
+        },
+        {
+          "required": [
+            "keep-weekly"
+          ]
+        },
+        {
+          "required": [
+            "keep-monthly"
+          ]
+        },
+        {
+          "required": [
+            "keep-yearly"
+          ]
+        },
+        {
+          "required": [
+            "keep-within"
+          ]
+        },
+        {
+          "required": [
+            "keep-tag"
+          ]
+        }
+      ],
+      "properties": {
+        "group-by": {
+          "type": "string"
+        },
+        "keep-daily": {
+          "type": "integer"
+        },
+        "keep-hourly": {
+          "type": "integer"
+        },
+        "keep-last": {
+          "type": "integer"
+        },
+        "keep-monthly": {
+          "type": "integer"
+        },
+        "keep-tag": {
+          "type": "string"
+        },
+        "keep-weekly": {
+          "type": "integer"
+        },
+        "keep-within": {
+          "type": "string"
+        },
+        "keep-yearly": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "repositories": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
   "required": [
     "repositories",
     "environment",
     "backup",
     "prune"
   ],
-  "properties": {
-    "name": {"type": "string"},
-
-    "repositories": {
-      "type": "array",
-      "items": {"type": "string"},
-      "minItems": 1,
-      "uniqueItems": true
-    },
-
-    "execution": {
-      "type": "object",
-      "properties": {
-        "retry_count": {"type": "integer"},
-        "retry_backoff": {"type": "string"},
-        "parallel": {
-          "type": "boolean",
-          "default": false
-        },
-        "exit_on_error": {
-          "type": "boolean",
-          "default": true
-        }
-      }
-    },
-
-    "environment": {
-      "type": "object",
-      "properties": {
-        "RESTIC_PASSWORD": {"type": "string"},
-        "RESTIC_PASSWORD_FILE": {"type": "string"}
-      },
-      "additionalProperties": { "type": "string" },
-      "oneOf": [
-        {"required": ["RESTIC_PASSWORD"]},
-        {"required": ["RESTIC_PASSWORD_FILE"]}
-      ]
-    },
-
-    "backup": {
-      "type": "object",
-      "oneOf": [
-        {"required": ["sources"]},
-        {"required": ["files_from"]}
-      ],
-      "properties": {
-        "sources": {
-          "type": "array",
-          "items": {"type": "string"},
-          "minItems": 1,
-          "uniqueItems": true
-        },
-        "files_from ": {"type": "array", "items": {"type": "string"}},
-        "exclude_patterns": {"type": "array", "items": {"type": "string"}},
-        "exclude_files": {"type": "array", "items": {"type": "string"}},
-        "exclude_if_present": {"type": "array", "items": {"type": "string"}},
-        "pre_hooks": {"type": "array", "items": {"type": "string"}},
-        "post_hooks": {"type": "array", "items": {"type": "string"}},
-        "continue_on_pre_hooks_error": {"type": "boolean", "default": false}
-      }
-    },
-
-    "prune": {
-      "type": "object",
-      "anyOf": [
-        {"required": ["keep-last"]},
-        {"required": ["keep-hourly"]},
-        {"required": ["keep-daily"]},
-        {"required": ["keep-weekly"]},
-        {"required": ["keep-monthly"]},
-        {"required": ["keep-yearly"]},
-        {"required": ["keep-within"]},
-        {"required": ["keep-tag"]}
-      ],
-      "properties": {
-        "keep-last": {"type": "integer"},
-        "keep-hourly": {"type": "integer"},
-        "keep-daily": {"type": "integer"},
-        "keep-weekly": {"type": "integer"},
-        "keep-monthly": {"type": "integer"},
-        "keep-yearly": {"type": "integer"},
-        "keep-within": {"type": "string"},
-        "keep-tag": {"type": "string"},
-        "group-by": {"type": "string"}
-      }
-    },
-
-    "check": {
-      "type": "object",
-      "properties": {
-        "checks": {
-          "type": "array",
-          "items": {"type": "string"},
-          "default": ["check-unused", "read-data"]
-        }
-      }
-    },
-
-    "metrics": {
-      "type": "object",
-      "properties": {
-        "prometheus": {
-          "type": "object",
-          "required": ["path"],
-          "properties": {
-            "path": {"type": "string"},
-            "pw-replacement": {"type": "string"}
-          }
-        }
-      }
-    }
-  }
+  "title": "Runrestic Config",
+  "type": "object"
 }
