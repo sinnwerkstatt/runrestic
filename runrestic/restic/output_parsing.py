@@ -1,14 +1,33 @@
+"""
+This module provides functions to parse the output of various Restic commands.
+
+Each function extracts relevant information from the command output and returns it
+in a structured format, such as dictionaries. These functions are used to process
+the output of commands like `backup`, `forget`, `prune`, and `stats`.
+"""
+
 import json
 import logging
 import re
-from typing import Any, Dict
+from typing import Any
 
 from runrestic.runrestic.tools import parse_line, parse_size, parse_time
 
 logger = logging.getLogger(__name__)
 
 
-def parse_backup(process_infos: Dict[str, Any]) -> Dict[str, Any]:
+def parse_backup(process_infos: dict[str, Any]) -> dict[str, Any]:
+    """
+    Parse the output of the Restic `backup` command.
+
+    Args:
+        process_infos (dict[str, Any]): A dictionary containing process information,
+            including the command output and execution time.
+
+    Returns:
+        dict[str, Any]: A dictionary with parsed backup statistics, such as file counts,
+        directory counts, processed size, and duration.
+    """
     return_code, output = process_infos["output"][-1]
     logger.debug("Parsing backup output: %s", output)
 
@@ -55,7 +74,18 @@ def parse_backup(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def parse_forget(process_infos: Dict[str, Any]) -> Dict[str, Any]:
+def parse_forget(process_infos: dict[str, Any]) -> dict[str, Any]:
+    """
+    Parse the output of the Restic `forget` command.
+
+    Args:
+        process_infos (dict[str, Any]): A dictionary containing process information,
+            including the command output and execution time.
+
+    Returns:
+        dict[str, Any]: A dictionary with parsed forget statistics, such as the number
+        of removed snapshots and duration.
+    """
     return_code, output = process_infos["output"][-1]
     re_removed_snapshots = parse_line(r"remove ([0-9]+) snapshots", output, "0")
     return {
@@ -65,7 +95,18 @@ def parse_forget(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def parse_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
+def parse_prune(process_infos: dict[str, Any]) -> dict[str, Any]:
+    """
+    Parse the output of the Restic `prune` command.
+
+    Args:
+        process_infos (dict[str, Any]): A dictionary containing process information,
+            including the command output and execution time.
+
+    Returns:
+        dict[str, Any]: A dictionary with parsed prune statistics, such as the number
+        of removed blobs, freed size, and duration.
+    """
     return_code, output = process_infos["output"][-1]
     containing_packs, containing_blobs, containing_size = parse_line(
         r"repository contains ([0-9]+) packs \(([0-9]+) blobs\) with (-?[0-9.]+ ?[a-zA-Z]*B)",
@@ -108,7 +149,18 @@ def parse_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def parse_new_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
+def parse_new_prune(process_infos: dict[str, Any]) -> dict[str, Any]:
+    """
+    Parse the output of the new Restic `prune` command.
+
+    Args:
+        process_infos (dict[str, Any]): A dictionary containing process information,
+            including the command output and execution time.
+
+    Returns:
+        dict[str, Any]: A dictionary with parsed prune statistics, such as the number
+        of blobs to repack, removed blobs, and remaining unused size.
+    """
     return_code, output = process_infos["output"][-1]
 
     to_repack_blobs, to_repack_bytes = parse_line(
@@ -158,7 +210,18 @@ def parse_new_prune(process_infos: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def parse_stats(process_infos: Dict[str, Any]) -> Dict[str, Any]:
+def parse_stats(process_infos: dict[str, Any]) -> dict[str, Any]:
+    """
+    Parse the output of the Restic `stats` command.
+
+    Args:
+        process_infos (dict[str, Any]): A dictionary containing process information,
+            including the command output and execution time.
+
+    Returns:
+        dict[str, Any]: A dictionary with parsed statistics, such as total file count
+        and total size in bytes.
+    """
     return_code, output = process_infos["output"][-1]
     try:
         stats_json = json.loads(re.findall(r"(\{.*\})", output, re.MULTILINE)[0])

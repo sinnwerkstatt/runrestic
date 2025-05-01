@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 readme_path = os.path.join(here, "README.md")
 
 setup(
-    long_description=open(readme_path, "r", encoding="utf-8").read(),
+    long_description=open(readme_path, encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     name="runrestic",
     version="0.5.30",
@@ -30,9 +30,7 @@ setup(
         "Topic :: Security :: Cryptography",
         "Topic :: System :: Archiving :: Backup",
     ],
-    entry_points={
-        "console_scripts": ["runrestic = runrestic.runrestic.runrestic:runrestic"]
-    },
+    entry_points={"console_scripts": ["runrestic = runrestic.runrestic.runrestic:runrestic"]},
     packages=[
         "runrestic",
         "runrestic.metrics",
