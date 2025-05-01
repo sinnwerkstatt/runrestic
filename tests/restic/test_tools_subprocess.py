@@ -12,10 +12,8 @@ from runrestic.restic import tools
 
 def test_log_messages_no_output():
     """Test log messages with no output"""
-    # Create a fake process object
-    fake_proc = type("FakeProc", (), {})()
-    fake_proc.stdout = StringIO("    ")
-    assert tools.log_messages(fake_proc, "test_cmd") == ""
+    assert tools.log_messages(None, "test_cmd") == ""
+    assert tools.log_messages(StringIO("    "), "test_cmd") == ""
 
 
 def test_restic_logs(caplog, fp, monkeypatch):  # pylint: disable=invalid-name
@@ -61,9 +59,7 @@ def test_restic_abort(caplog, fp, monkeypatch):  # pylint: disable=invalid-name
     fp.register(cmd, stdout=out, returncode=1, occurrences=3)
     monkeypatch.setattr(tools, "Popen", subprocess.Popen)
     caplog.set_level(logging.INFO)
-    result = tools.retry_process(
-        cmd, config={"retry_count": 2}, abort_reasons=["Fatal: wrong password"]
-    )
+    result = tools.retry_process(cmd, config={"retry_count": 2}, abort_reasons=["Fatal: wrong password"])
     assert result["output"] == [(1, "\n".join([*out, ""]))]
     assert (
         "runrestic.restic.tools",
@@ -88,12 +84,8 @@ def test_retry_pass_logs(caplog, fp, monkeypatch):  # pylint: disable=invalid-na
     fp.register(cmd, stdout=out_pass, returncode=0)
     monkeypatch.setattr(tools, "Popen", subprocess.Popen)
     caplog.set_level(logging.INFO)
-    result = tools.retry_process(
-        cmd, config={"retry_count": retries}, abort_reasons=["Fatal: wrong password"]
-    )
-    assert result["output"] == [(1, out_fail[0] + "\n")] * retries + [
-        (0, out_pass[0] + "\n")
-    ]
+    result = tools.retry_process(cmd, config={"retry_count": retries}, abort_reasons=["Fatal: wrong password"])
+    assert result["output"] == [(1, out_fail[0] + "\n")] * retries + [(0, out_pass[0] + "\n")]
     assert (
         "runrestic.restic.tools",
         logging.CRITICAL,
@@ -117,9 +109,7 @@ def test_retry_fail_logs(caplog, fp, monkeypatch):  # pylint: disable=invalid-na
     fp.register(cmd, stdout=out_pass, returncode=0)
     monkeypatch.setattr(tools, "Popen", subprocess.Popen)
     caplog.set_level(logging.INFO)
-    result = tools.retry_process(
-        cmd, config={"retry_count": retries}, abort_reasons=["Fatal: wrong password"]
-    )
+    result = tools.retry_process(cmd, config={"retry_count": retries}, abort_reasons=["Fatal: wrong password"])
     assert result["output"] == [(1, out_fail[0] + "\n")] * (retries + 1)
     assert (
         "runrestic.restic.tools",
