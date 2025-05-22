@@ -237,9 +237,9 @@ class ResticRunner:
                 self.metrics["errors"] += 1
             else:
                 try:
-                    metrics[
-                        redact_password(repo, self.pw_replacement)
-                    ] = parse_new_prune(process_infos)
+                    metrics[redact_password(repo, self.pw_replacement)] = (
+                        parse_new_prune(process_infos)
+                    )
                 except IndexError:
                     # assume we're dealing with restic <0.12.0
                     metrics[redact_password(repo, self.pw_replacement)] = parse_prune(
@@ -277,7 +277,7 @@ class ResticRunner:
                 "errors": 0,
                 "errors_data": 0,
                 "errors_snapshots": 0,
-                "read_data": 1 if "read_data" in extra_args else 0,
+                "read_data": 1 if "--read-data" in extra_args else 0,
                 "check_unused": 1 if "--check-unused" in extra_args else 0,
             }
             return_code, output = process_infos["output"][-1]
