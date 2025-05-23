@@ -4,6 +4,7 @@ import re
 import time
 from argparse import Namespace
 from datetime import datetime
+from glob import glob
 from typing import Any, Dict, List
 
 from runrestic.metrics import write_metrics
@@ -120,7 +121,7 @@ class ResticRunner:
             ["restic", "-r", repo, "backup"]
             + self.restic_args
             + extra_args
-            + cfg.get("sources", [])
+            + glob(src) for src in cfg.get("sources", [])
             for repo in self.repos
         ]
         direct_abort_reasons = [
