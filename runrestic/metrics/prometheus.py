@@ -1,5 +1,15 @@
-from typing import Any, Dict, Iterator
+"""
+This module provides functionality to generate Prometheus-compatible metrics
+based on the output of various Restic commands.
 
+It defines templates for Prometheus metrics and functions to format the metrics
+based on the parsed Restic output. The metrics include information about backup,
+forget, prune, check, and stats operations.
+"""
+
+from typing import Any, Iterator
+
+# Prometheus metric templates for general metrics
 _restic_help_general = """
 # HELP restic_last_run Epoch timestamp of the last run
 # TYPE restic_last_run gauge
@@ -14,6 +24,7 @@ restic_total_duration_seconds{{config="{name}"}} {total_duration_seconds}
 restic_total_errors{{config="{name}"}} {errors}
 """
 
+# Additional Prometheus metric templates for specific operations
 _restic_help_pre_hooks = """
 # HELP restic_pre_hooks_duration_seconds Pre hooks duration in seconds
 # TYPE restic_pre_hooks_duration_seconds gauge
@@ -160,7 +171,7 @@ _restic_help_check = """
 # TYPE restic_check_errors_data gauge
 # HELP restic_check_errors_snapshots Boolean to tell if any of the snapshots can not be loaded
 # TYPE restic_check_errors_snapshots gauge
-# HELP restic_check_read_data Boolean that indicates whether or not `--read-data` was pass to restic 
+# HELP restic_check_read_data Boolean that indicates whether or not `--read-data` was pass to restic
 # TYPE restic_check_read_data gauge
 # HELP restic_check_check_unused Boolean that indicates whether or not `--check-unused` was pass to restic
 # TYPE restic_check_check_unused gauge
@@ -197,23 +208,43 @@ restic_stats_rc{{config="{name}",repository="{repository}"}} {rc}
 """
 
 
-def generate_lines(metrics: Dict[str, Any], name: str) -> Iterator[str]:
+def generate_lines(metrics: dict[str, Any], name: str) -> Iterator[str]:
+    """
+    Generate Prometheus metrics lines for the given Restic metrics.
+
+    Args:
+        metrics (dict[str, Any]): A dictionary containing parsed Restic metrics.
+        name (str): The configuration name for the metrics.
+
+    Yields:
+        Iterator[str]: Prometheus-formatted metric lines.
+    """
     yield _restic_help_general
     yield _restic_general.format(name=name, **metrics)
 
     if metrics.get("backup"):
         yield backup_metrics(metrics["backup"], name)
     if metrics.get("forget"):
-        yield str(forget_metrics(metrics["forget"], name))
+        yield forget_metrics(metrics["forget"], name)
     if metrics.get("prune"):
-        yield str(prune_metrics(metrics["prune"], name))
+        yield prune_metrics(metrics["prune"], name)
     if metrics.get("check"):
-        yield str(check_metrics(metrics["check"], name))
+        yield check_metrics(metrics["check"], name)
     if metrics.get("stats"):
-        yield str(stats_metrics(metrics["stats"], name))
+        yield stats_metrics(metrics["stats"], name)
 
 
-def backup_metrics(metrics: Dict[str, Any], name: str) -> str:
+def backup_metrics(metrics: dict[str, Any], name: str) -> str:
+    """
+    Generate Prometheus metrics for Restic backup operations.
+
+    Args:
+        metrics (dict[str, Any]): A dictionary containing backup metrics.
+        name (str): The configuration name for the metrics.
+
+    Returns:
+        str: Prometheus-formatted backup metrics.
+    """
     pre_hooks = post_hooks = False
     retval = ""
     for repo, mtrx in metrics.items():
@@ -237,7 +268,17 @@ def backup_metrics(metrics: Dict[str, Any], name: str) -> str:
     return help_text + retval
 
 
-def forget_metrics(metrics: Dict[str, Any], name: str) -> str:
+def forget_metrics(metrics: dict[str, Any], name: str) -> str:
+    """
+    Generate Prometheus metrics for Restic forget operations.
+
+    Args:
+        metrics (dict[str, Any]): A dictionary containing forget metrics.
+        name (str): The configuration name for the metrics.
+
+    Returns:
+        str: Prometheus-formatted forget metrics.
+    """
     retval = _restic_help_forget
     for repo, mtrx in metrics.items():
         if mtrx["rc"] != 0:
@@ -247,13 +288,21 @@ def forget_metrics(metrics: Dict[str, Any], name: str) -> str:
     return retval
 
 
-def prune_metrics(metrics: Dict[str, Any], name: str) -> str:
+def prune_metrics(metrics: dict[str, Any], name: str) -> str:
+    """
+    Generate Prometheus metrics for Restic prune operations.
+
+    Args:
+        metrics (dict[str, Any]): A dictionary containing prune metrics.
+        name (str): The configuration name for the metrics.
+
+    Returns:
+        str: Prometheus-formatted prune metrics.
+    """
     retval = _restic_help_prune
     for repo, mtrx in metrics.items():
         if mtrx["rc"] != 0:
-            retval += (
-                f'restic_prune_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}\n'
-            )
+            retval += f'restic_prune_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}\n'
         else:
             try:
                 retval += _restic_prune.format(name=name, repository=repo, **mtrx)
@@ -262,25 +311,41 @@ def prune_metrics(metrics: Dict[str, Any], name: str) -> str:
     return retval
 
 
-def check_metrics(metrics: Dict[str, Any], name: str) -> str:
+def check_metrics(metrics: dict[str, Any], name: str) -> str:
+    """
+    Generate Prometheus metrics for Restic check operations.
+
+    Args:
+        metrics (dict[str, Any]): A dictionary containing check metrics.
+        name (str): The configuration name for the metrics.
+
+    Returns:
+        str: Prometheus-formatted check metrics.
+    """
     retval = _restic_help_check
     for repo, mtrx in metrics.items():
         if mtrx["rc"] != 0:
-            retval += (
-                f'restic_check_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}\n'
-            )
+            retval += f'restic_check_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}\n'
         else:
             retval += _restic_check.format(name=name, repository=repo, **mtrx)
     return retval
 
 
-def stats_metrics(metrics: Dict[str, Any], name: str) -> str:
+def stats_metrics(metrics: dict[str, Any], name: str) -> str:
+    """
+    Generate Prometheus metrics for Restic stats operations.
+
+    Args:
+        metrics (dict[str, Any]): A dictionary containing stats metrics.
+        name (str): The configuration name for the metrics.
+
+    Returns:
+        str: Prometheus-formatted stats metrics.
+    """
     retval = _restic_help_stats
     for repo, mtrx in metrics.items():
         if mtrx["rc"] != 0:
-            retval += (
-                f'restic_stats_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}\n'
-            )
+            retval += f'restic_stats_rc{{config="{name}",repository="{repo}"}} {mtrx["rc"]}\n'
         else:
             retval += _restic_stats.format(name=name, repository=repo, **mtrx)
     return retval
