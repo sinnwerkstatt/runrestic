@@ -76,7 +76,9 @@ def parse_time(time_str: str) -> int:
     """
     re_time = re.compile(r"(?:([0-9]+):)?([0-9]+):([0-9]+)")
     try:
-        hours, minutes, seconds = (int(x) if x else 0 for x in re_time.findall(time_str)[0])
+        hours, minutes, seconds = (
+            int(x) if x else 0 for x in re_time.findall(time_str)[0]
+        )
     except IndexError:
         logger.error("Failed to parse time of '%s'", time_str)
         return 0
@@ -110,7 +112,7 @@ def deep_update(base: dict[Any, Any], update: dict[Any, Any]) -> dict[Any, Any]:
     return new
 
 
-ParsedType = TypeVar("ParsedType", str, tuple)
+ParsedType = TypeVar("ParsedType", str, tuple[str, ...])
 
 
 def parse_line(
