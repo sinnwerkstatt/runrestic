@@ -153,7 +153,9 @@ class TestResticRunner(TestCase):
             with self.subTest(sc["name"]):
                 args = Namespace(actions=sc["actions"])
                 args.dry_run = False
-                runner_instance = runner.ResticRunner(sc["config"], args, restic_args=[])
+                runner_instance = runner.ResticRunner(
+                    sc["config"], args, restic_args=[]
+                )
                 runner_instance.metrics["errors"] = sc["initial_errors"]
 
                 result = runner_instance.run()
@@ -170,7 +172,9 @@ class TestResticRunner(TestCase):
 
                 # verify write_metrics
                 if sc["write_metrics"]:
-                    mock_write_metrics.assert_called_once_with(runner_instance.metrics, sc["config"])
+                    mock_write_metrics.assert_called_once_with(
+                        runner_instance.metrics, sc["config"]
+                    )
                 else:
                     mock_write_metrics.assert_not_called()
 
@@ -223,7 +227,9 @@ class TestResticRunner(TestCase):
 
     @patch("runrestic.restic.runner.MultiCommand")
     @patch("runrestic.restic.runner.parse_backup")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
     def test_backup_metrics(self, mock_redact, mock_parse_backup, mock_mc):
         """
         Test backup() handles success and failure correctly and updates metrics and errors.
@@ -290,7 +296,9 @@ class TestResticRunner(TestCase):
             "Fatal: unable to open config file",
             "Fatal: wrong password",
         ]
-        mock_mc.assert_called_once_with(expected_commands, config["execution"], expected_abort)
+        mock_mc.assert_called_once_with(
+            expected_commands, config["execution"], expected_abort
+        )
         mock_mc.return_value.run.assert_called_once()
 
         metrics = runner_instance.metrics["backup"]
@@ -300,8 +308,12 @@ class TestResticRunner(TestCase):
 
     @patch("runrestic.restic.runner.MultiCommand")
     @patch("runrestic.restic.runner.parse_backup")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
-    def test_backup_with_pre_and_post_hooks(self, mock_redact, mock_parse_backup, mock_mc):
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
+    def test_backup_with_pre_and_post_hooks(
+        self, mock_redact, mock_parse_backup, mock_mc
+    ):
         """
         Test backup() runs pre_hooks, the main backup, and post_hooks with correct arguments and metrics.
         """
@@ -349,7 +361,16 @@ class TestResticRunner(TestCase):
         self.assertEqual(calls[0][0][0], config["backup"]["pre_hooks"])
         self.assertEqual(calls[0][1], {"config": hooks_cfg})
         # 2) main backup
-        expected_cmds = [["restic", "-r", "repo", "backup", *restic_args, *config["backup"]["sources"]]]
+        expected_cmds = [
+            [
+                "restic",
+                "-r",
+                "repo",
+                "backup",
+                *restic_args,
+                *config["backup"]["sources"],
+            ]
+        ]
         expected_abort = ["Fatal: unable to open config file", "Fatal: wrong password"]
         self.assertEqual(calls[1][0][0], expected_cmds)
         self.assertEqual(calls[1][0][1], config["execution"])
@@ -417,7 +438,9 @@ class TestResticRunner(TestCase):
 
     @patch("runrestic.restic.runner.MultiCommand")
     @patch("runrestic.restic.runner.parse_forget")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
     def test_forget_metrics(self, mock_redact, mock_parse_forget, mock_mc):
         """
         Test forget() handles metrics parsing and errors correctly.
@@ -442,7 +465,9 @@ class TestResticRunner(TestCase):
 
     @patch("runrestic.restic.runner.MultiCommand")
     @patch("runrestic.restic.runner.parse_forget")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
     def test_forget_failure_increments_errors(
         self,
         mock_redact,
@@ -479,7 +504,9 @@ class TestResticRunner(TestCase):
         self.assertEqual(runner_instance.metrics["errors"], 1)
 
         # Ensure "--dry-run" was included in the command
-        expected_cmds = [["restic", "-r", "repo", "forget", "--dry-run", "--keep-last", "2"]]
+        expected_cmds = [
+            ["restic", "-r", "repo", "forget", "--dry-run", "--keep-last", "2"]
+        ]
         mock_mc.assert_called_once_with(
             expected_cmds,
             config=config["execution"],
@@ -491,7 +518,9 @@ class TestResticRunner(TestCase):
 
     @patch("runrestic.restic.runner.MultiCommand")
     @patch("runrestic.restic.runner.parse_forget")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
     def test_forget_with_group_by_and_success(
         self,
         mock_redact,
@@ -540,8 +569,12 @@ class TestResticRunner(TestCase):
     @patch("runrestic.restic.runner.MultiCommand")
     @patch("runrestic.restic.runner.parse_new_prune", side_effect=IndexError)
     @patch("runrestic.restic.runner.parse_prune")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
-    def test_prune_metrics_old_prune(self, mock_redact, mock_parse_prune, mock_new_prune, mock_mc):
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
+    def test_prune_metrics_old_prune(
+        self, mock_redact, mock_parse_prune, mock_new_prune, mock_mc
+    ):
         """
         Test prune() falls back to parse_prune when parse_new_prune raises IndexError.
         """
@@ -563,7 +596,9 @@ class TestResticRunner(TestCase):
 
     @patch("runrestic.restic.runner.MultiCommand")
     @patch("runrestic.restic.runner.parse_new_prune")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
     def test_prune_metrics_new_prune(self, mock_redact, mock_parse_new_prune, mock_mc):
         """
         Test prune() uses parse_new_prune when available.
@@ -587,7 +622,9 @@ class TestResticRunner(TestCase):
     @patch("runrestic.restic.runner.MultiCommand")
     @patch("runrestic.restic.runner.parse_new_prune")
     @patch("runrestic.restic.runner.parse_prune")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
     def test_prune_failure_increments_errors(
         self,
         mock_redact,
@@ -625,7 +662,9 @@ class TestResticRunner(TestCase):
         self.assertEqual(runner_instance.metrics["errors"], 1)
 
     @patch("runrestic.restic.runner.MultiCommand")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
     @patch("runrestic.restic.runner.parse_stats")
     def test_stats_metrics(self, mock_parse_stats, mock_redact, mock_mc):
         """
@@ -649,9 +688,13 @@ class TestResticRunner(TestCase):
         self.assertEqual(runner_instance.metrics["errors"], 0)
 
     @patch("runrestic.restic.runner.MultiCommand")
-    @patch("runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo)
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
     @patch("runrestic.restic.runner.parse_stats")
-    def test_stats_failure_increments_errors(self, mock_parse_stats, mock_redact, mock_mc):
+    def test_stats_failure_increments_errors(
+        self, mock_parse_stats, mock_redact, mock_mc
+    ):
         """
         Test stats() handles return_code > 0 by recording rc and incrementing errors.
         """
@@ -711,7 +754,9 @@ class TestResticRunner(TestCase):
                         "checks": ["check-unused"],
                     },
                 },
-                "expected_commands": [["restic", "-r", "repo", "check", "--check-unused"]],
+                "expected_commands": [
+                    ["restic", "-r", "repo", "check", "--check-unused"]
+                ],
                 "expected_stats": {
                     "check_unused": 1,
                     "read_data": 0,
@@ -760,7 +805,9 @@ class TestResticRunner(TestCase):
                     "Fatal: wrong password",
                 ]
                 mock_mc.assert_called_once_with(
-                    expected_commands, config=sc["config"]["execution"], abort_reasons=expected_abort
+                    expected_commands,
+                    config=sc["config"]["execution"],
+                    abort_reasons=expected_abort,
                 )
                 mock_mc.return_value.run.assert_called_once()
 
@@ -775,7 +822,9 @@ class TestResticRunner(TestCase):
                     "duration_seconds": 0.5,
                     "rc": 1,
                 }
-                self.assertEqual(runner_instance.metrics["check"]["repo"], expected_stats)
+                self.assertEqual(
+                    runner_instance.metrics["check"]["repo"], expected_stats
+                )
 
                 # global errors counter
                 self.assertEqual(runner_instance.metrics["errors"], 1)
@@ -802,13 +851,19 @@ class TestResticRunner(TestCase):
             },
             {
                 "name": "load_error",
-                "process_info": {"output": [(0, "Test: error: load <snapshot/123>")], "time": 0.1},
+                "process_info": {
+                    "output": [(0, "Test: error: load <snapshot/123>")],
+                    "time": 0.1,
+                },
                 "global_errors": 0,
                 "check_errors": 1,
             },
             {
                 "name": "pack_id_mismatch",
-                "process_info": {"output": [(0, "Test: Pack ID does not match, WRONG")], "time": 0.1},
+                "process_info": {
+                    "output": [(0, "Test: Pack ID does not match, WRONG")],
+                    "time": 0.1,
+                },
                 "global_errors": 0,
                 "check_errors": 1,
             },
@@ -830,6 +885,9 @@ class TestResticRunner(TestCase):
                 # global errors counter
                 self.assertEqual(runner_instance.metrics["errors"], sc["global_errors"])
                 # check errors counter
-                self.assertEqual(runner_instance.metrics["check"]["repo"]["errors"], sc["check_errors"])
+                self.assertEqual(
+                    runner_instance.metrics["check"]["repo"]["errors"],
+                    sc["check_errors"],
+                )
                 # reset between subtests
                 mock_mc.reset_mock()

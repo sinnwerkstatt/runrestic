@@ -138,14 +138,18 @@ def test_configuration_file_paths_not_exists(tmpdir):
 def test_configuration_file_paths_is_file(tmpdir):
     tmpdir.join("config.yaml").write("irrelevant")
     conf_paths = [str(tmpdir.join("config.yaml"))]
-    with patch("runrestic.runrestic.configuration.possible_config_paths") as mock_possible_paths:
+    with patch(
+        "runrestic.runrestic.configuration.possible_config_paths"
+    ) as mock_possible_paths:
         mock_possible_paths.return_value = conf_paths
         assert configuration_file_paths() == conf_paths
 
 
 def test_configuration_file_paths_exclude_dirs(tmpdir):
     tmpdir.join("config.yaml").mkdir()
-    with patch("runrestic.runrestic.configuration.possible_config_paths") as mock_possible_paths:
+    with patch(
+        "runrestic.runrestic.configuration.possible_config_paths"
+    ) as mock_possible_paths:
         mock_possible_paths.return_value = str(tmpdir)
         assert configuration_file_paths() == []
 
@@ -186,7 +190,9 @@ def test_parse_configuration_broken_conf(caplog, restic_minimal_broken_conf):
 
 
 def test_cli_arguments_with_extra_args():
-    assert cli_arguments(["backup", "--one-file-system", "pos_arg", "--", "--more"]) == (
+    assert cli_arguments(
+        ["backup", "--one-file-system", "pos_arg", "--", "--more"]
+    ) == (
         Namespace(
             actions=["backup"],
             config_file=None,

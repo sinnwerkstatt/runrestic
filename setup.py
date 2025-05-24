@@ -13,7 +13,7 @@ setup(
     name="runrestic",
     version="0.5.30",
     description="A wrapper script for Restic backup software that inits, creates, prunes and checks backups",
-    python_requires=">=3.7.0,<4.0",
+    python_requires=">=3.10.0,<4.0",
     project_urls={
         "homepage": "https://github.com/sinnwerkstatt/runrestic",
         "repository": "https://github.com/sinnwerkstatt/runrestic",

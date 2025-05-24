@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">3.8"
+python = ">=3.10"
 toml = "^0.10"
 jsonschema = ">3.0"
 requests = ">2.27.1"
@@ -30,7 +30,7 @@ mypy = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-subprocess = "*"
-importlib-metadata = { version = ">=4.0", python = ">=3.8" }
+importlib-metadata = { version = ">=4.0", python = ">=3.10" }
 types-requests = "*"
 types-toml = "*"
 
@@ -39,7 +39,7 @@ runrestic = 'runrestic.runrestic.runrestic:runrestic'
 
 [tool.black]
 line-length = 88
-target-version = ['py37', 'py38', 'py39', 'py310']
+target-version = ['py310', 'py311', 'py312', 'py313']
 include = '\.pyi?$'
 exclude = '''
 /(
