@@ -12,10 +12,8 @@ from runrestic.restic import tools
 
 def test_log_messages_no_output():
     """Test log messages with no output"""
-    # Create a fake process object
-    fake_proc = type("FakeProc", (), {})()
-    fake_proc.stdout = StringIO("    ")
-    assert tools.log_messages(fake_proc, "test_cmd") == ""
+    assert tools.log_messages(None, "test_cmd") == ""
+    assert tools.log_messages(StringIO("    "), "test_cmd") == ""
 
 
 def test_restic_logs(caplog, fp, monkeypatch):  # pylint: disable=invalid-name

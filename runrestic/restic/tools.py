@@ -14,7 +14,7 @@ import time
 from concurrent.futures import Future
 from concurrent.futures.process import ProcessPoolExecutor
 from subprocess import PIPE, STDOUT, Popen
-from typing import Any, Sequence
+from typing import IO, Any, Sequence
 
 from runrestic.runrestic.tools import parse_time
 
@@ -71,19 +71,21 @@ class MultiCommand:
         return [process.result() for process in self.processes]
 
 
-def log_messages(process: Any, proc_cmd: str) -> str:
+def log_messages(message: IO[str] | None, proc_cmd: str) -> str:
     """
     Capture the process output and generate appropriate log messages.
 
     Args:
-        process (Any): The process object from which to capture output.
+        message (IO[str] | None): Process output message.
         proc_cmd (str): Name of the executed command (as it should appear in the logs).
 
     Returns:
         str: Complete process output.
     """
+    if message is None:
+        return ""
     output = ""
-    for log_out in process.stdout:
+    for log_out in message:
         if log_out.strip():
             output += log_out
             if re.match(r"^critical|fatal", log_out, re.I):
@@ -134,7 +136,7 @@ def retry_process(
         with Popen(
             cmd, stdout=PIPE, stderr=STDOUT, shell=shell, encoding="UTF-8"
         ) as process:  # noqa: S603
-            output = log_messages(process, proc_cmd)
+            output = log_messages(process.stdout, proc_cmd)
         returncode = process.returncode
         status["output"].append((returncode, output))
         if returncode == 0:
