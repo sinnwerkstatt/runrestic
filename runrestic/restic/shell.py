@@ -44,8 +44,13 @@ def restic_shell(configs: list[dict[str, Any]]) -> None:
                 all_repos.append((config, repo))
                 i += 1
 
-        selection = int(input(f"Choose a repo [0-{i - 1}]: "))
-        selected_config, selected_repo = all_repos[selection]
+        try:
+            selection = int(input(f"Choose a repo [0-{i - 1}]: "))
+            selected_config, selected_repo = all_repos[selection]
+        except (ValueError, IndexError):
+            raise ValueError(
+                "Invalid selection. Please choose a valid repository index."
+            )  # noqa: B904, TRY003
 
     env: dict[str, str] = selected_config["environment"]
     env.update({"RESTIC_REPOSITORY": selected_repo})

@@ -142,6 +142,7 @@ sudo chmod +x /etc/cron.d/runrestic
   - Drop support for Python 3.8 (EOL 2024-10-07) and 3.9 (EOL 2025-10)
   - Add and update docstrings
   - Add and update type hints
+  - Minor code improvements and test coverage
 - v0.5.30
   - Fix metric setting in restic runner for "check"
   - Support Python 3.13
