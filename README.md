@@ -138,6 +138,10 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ## Changelog
 
+- pre-v0.5.31
+  - Drop support for Python 3.8 (EOL 2024-10-07) and 3.9 (EOL 2025-10)
+  - Add and update docstrings
+  - Add and update type hints
 - v0.5.30
   - Fix metric setting in restic runner for "check"
   - Support Python 3.13
@@ -203,7 +207,7 @@ poetry run pytest
 The project contains a `.devcontainer` folder with the settings for VScode to [develop inside container](https://code.visualstudio.com/docs/remote/containers). The Python virtual environment
 created by poetry is stored outside the container in the projects path `.virtualenvs` so that it survives container rebuilds.
 
-The Ubuntu 24.04 based container uses Python 3.12 as system version and includes minimal Python 3.8 to 3.11 versions
+The Ubuntu 24.04 based container uses Python 3.12 as system version and includes minimal Python 3.10 to 3.13 versions
 for creating virtual environments in any of those versions.
 
 It is possible to switch the Python version used by `poetry` with the command `poetry env use <version>`,

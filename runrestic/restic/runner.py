@@ -1,10 +1,16 @@
+"""
+This module provides the `ResticRunner` class, which is responsible for managing and executing
+various Restic commands such as backup, prune, check, stats, and more. It handles configuration,
+logging, metrics collection, and error handling for Restic operations.
+"""
+
 import json
 import logging
 import re
 import time
 from argparse import Namespace
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from runrestic.metrics import write_metrics
 from runrestic.restic.output_parsing import (
@@ -20,18 +26,39 @@ logger = logging.getLogger(__name__)
 
 
 class ResticRunner:
+    """
+    A class to manage and execute Restic commands based on the provided configuration and arguments.
+
+    Attributes:
+        config (dict): Configuration dictionary for Restic operations.
+        args (Namespace): Command-line arguments passed to the runner.
+        restic_args (list): Additional arguments to pass to Restic commands.
+        repos (list): list of repository paths to operate on.
+        metrics (dict): dictionary to store metrics and errors for operations.
+        log_metrics (bool): Flag to determine if metrics should be logged.
+        pw_replacement (str): Replacement string for sensitive information in logs.
+    """
+
     def __init__(
-        self, config: Dict[str, Any], args: Namespace, restic_args: List[str]
+        self, config: dict[str, Any], args: Namespace, restic_args: list[str]
     ) -> None:
+        """
+        Initialize the ResticRunner with configuration, arguments, and Restic-specific arguments.
+
+        Args:
+            config (dict): Configuration dictionary for Restic operations.
+            args (Namespace): Command-line arguments passed to the runner.
+            restic_args (list): Additional arguments to pass to Restic commands.
+        """
         self.config = config
         self.args = args
         self.restic_args = restic_args
 
-        self.repos = self.config["repositories"]
+        self.repos: list[str] = self.config["repositories"]
 
-        self.metrics: Dict[str, Any] = {"errors": 0}
-        self.log_metrics = config.get("metrics") and not args.dry_run
-        self.pw_replacement = (
+        self.metrics: dict[str, Any] = {"errors": 0}
+        self.log_metrics: Any = config.get("metrics") and not args.dry_run
+        self.pw_replacement: str = (
             config.get("metrics", {})
             .get("prometheus", {})
             .get("password_replacement", "")
@@ -39,7 +66,13 @@ class ResticRunner:
 
         initialize_environment(self.config["environment"])
 
-    def run(self) -> Any:
+    def run(self) -> int:  # noqa: C901
+        """
+        Execute the specified Restic actions in sequence.
+
+        Returns:
+            int: The number of errors encountered during execution.
+        """
         start_time = time.time()
         actions = self.args.actions
 
@@ -72,11 +105,14 @@ class ResticRunner:
         if self.log_metrics:
             write_metrics(self.metrics, self.config)
 
-        return self.metrics["errors"]
+        return self.metrics["errors"]  # type: ignore[no-any-return]
 
     def init(self) -> None:
+        """
+        Initialize the Restic repository for each configured repository.
+        """
         commands = [
-            ["restic", "-r", repo, "init"] + self.restic_args for repo in self.repos
+            ["restic", "-r", repo, "init", *self.restic_args] for repo in self.repos
         ]
 
         direct_abort_reasons = ["config file already exists"]
@@ -91,6 +127,9 @@ class ResticRunner:
                 logger.info(process_infos["output"])
 
     def backup(self) -> None:
+        """
+        Perform a backup operation for each configured repository, including pre- and post-hooks.
+        """
         metrics = self.metrics["backup"] = {}
         cfg = self.config["backup"]
 
@@ -106,7 +145,7 @@ class ResticRunner:
             }
 
         # actual backup
-        extra_args: List[str] = []
+        extra_args: list[str] = []
         for files_from in cfg.get("files_from", []):
             extra_args += ["--files-from", files_from]
         for exclude_pattern in cfg.get("exclude_patterns", []):
@@ -117,10 +156,15 @@ class ResticRunner:
             extra_args += ["--exclude-if-present", exclude_if_present]
 
         commands = [
-            ["restic", "-r", repo, "backup"]
-            + self.restic_args
-            + extra_args
-            + cfg.get("sources", [])
+            [
+                "restic",
+                "-r",
+                repo,
+                "backup",
+                *self.restic_args,
+                *extra_args,
+                *cfg.get("sources", []),
+            ]
             for repo in self.repos
         ]
         direct_abort_reasons = [
@@ -153,12 +197,15 @@ class ResticRunner:
             }
 
     def unlock(self) -> None:
+        """
+        Unlock the Restic repository for each configured repository.
+        """
         direct_abort_reasons = [
             "Fatal: unable to open config file",
             "Fatal: wrong password",
         ]
         commands = [
-            ["restic", "-r", repo, "unlock"] + self.restic_args for repo in self.repos
+            ["restic", "-r", repo, "unlock", *self.restic_args] for repo in self.repos
         ]
 
         cmd_runs = MultiCommand(
@@ -173,9 +220,12 @@ class ResticRunner:
                 logger.info(process_infos["output"])
 
     def forget(self) -> None:
+        """
+        Forget old snapshots in the Restic repository based on the pruning configuration.
+        """
         metrics = self.metrics["forget"] = {}
 
-        extra_args: List[str] = []
+        extra_args: list[str] = []
         if self.args.dry_run:
             extra_args += ["--dry-run"]
         for key, value in self.config["prune"].items():
@@ -189,7 +239,7 @@ class ResticRunner:
             "Fatal: wrong password",
         ]
         commands = [
-            ["restic", "-r", repo, "forget"] + self.restic_args + extra_args
+            ["restic", "-r", repo, "forget", *self.restic_args, *extra_args]
             for repo in self.repos
         ]
         cmd_runs = MultiCommand(
@@ -212,6 +262,9 @@ class ResticRunner:
                 )
 
     def prune(self) -> None:
+        """
+        Prune unused data from the Restic repository.
+        """
         metrics = self.metrics["prune"] = {}
 
         direct_abort_reasons = [
@@ -219,7 +272,7 @@ class ResticRunner:
             "Fatal: wrong password",
         ]
         commands = [
-            ["restic", "-r", repo, "prune"] + self.restic_args for repo in self.repos
+            ["restic", "-r", repo, "prune", *self.restic_args] for repo in self.repos
         ]
         cmd_runs = MultiCommand(
             commands,
@@ -247,9 +300,12 @@ class ResticRunner:
                     )
 
     def check(self) -> None:
+        """
+        Perform a consistency check on the Restic repository.
+        """
         self.metrics["check"] = {}
 
-        extra_args: List[str] = []
+        extra_args: list[str] = []
         cfg = self.config.get("check")
         if cfg and "checks" in cfg:
             checks = cfg["checks"]
@@ -263,7 +319,7 @@ class ResticRunner:
             "Fatal: wrong password",
         ]
         commands = [
-            ["restic", "-r", repo, "check"] + self.restic_args + extra_args
+            ["restic", "-r", repo, "check", *self.restic_args, *extra_args]
             for repo in self.repos
         ]
         cmd_runs = MultiCommand(
@@ -295,6 +351,9 @@ class ResticRunner:
             self.metrics["check"][redact_password(repo, self.pw_replacement)] = metrics
 
     def stats(self) -> None:
+        """
+        Collect statistics for the Restic repository.
+        """
         metrics = self.metrics["stats"] = {}
 
         direct_abort_reasons = [
@@ -305,7 +364,7 @@ class ResticRunner:
         verbose = re.compile(r"^--verbose")
         quiet = [] if list(filter(verbose.match, self.restic_args)) else ["-q"]
         commands = [
-            ["restic", "-r", repo, "stats", "--json"] + quiet + self.restic_args
+            ["restic", "-r", repo, "stats", "--json", *quiet, *self.restic_args]
             for repo in self.repos
         ]
         cmd_runs = MultiCommand(

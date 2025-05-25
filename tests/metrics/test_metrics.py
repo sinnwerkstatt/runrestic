@@ -7,7 +7,10 @@ from runrestic.metrics import prometheus, write_metrics
 
 class TestResticMetrics(TestCase):
     @patch("builtins.open", new_callable=mock_open)
-    @patch("runrestic.metrics.prometheus.generate_lines", return_value=["line1\n", "line2\n"])
+    @patch(
+        "runrestic.metrics.prometheus.generate_lines",
+        return_value=["line1\n", "line2\n"],
+    )
     def test_write_metrics(self, mock_generate_lines, mock_open):
         cfg = {
             "name": "test",
@@ -26,7 +29,10 @@ class TestResticMetrics(TestCase):
         fh = mock_open()
         fh.writelines.assert_called_once_with("line1\nline2\n")
 
-    @patch("runrestic.metrics.prometheus.generate_lines", return_value=["line1\n", "line2\n"])
+    @patch(
+        "runrestic.metrics.prometheus.generate_lines",
+        return_value=["line1\n", "line2\n"],
+    )
     def test_write_metrics_skipped(self, mock_generate_lines):
         cfg = {
             "name": "test",
@@ -62,7 +68,12 @@ class TestResticMetricsPrometheus(TestCase):
     @patch("runrestic.metrics.prometheus.check_metrics", wraps=mock_metrics_func)
     @patch("runrestic.metrics.prometheus.stats_metrics", wraps=mock_metrics_func)
     def test_generate_lines(
-        self, mock_stats_metrics, mock_check_metrics, mock_prune_metrics, mock_forget_metrics, mock_backup_metrics
+        self,
+        mock_stats_metrics,
+        mock_check_metrics,
+        mock_prune_metrics,
+        mock_forget_metrics,
+        mock_backup_metrics,
     ):
         scenarios: list[dict[str, Any]] = [
             {
@@ -92,7 +103,9 @@ class TestResticMetricsPrometheus(TestCase):
             "total_duration_seconds": 12,
         }
         prometheus._restic_help_general = "restic_help_general"
-        prometheus._restic_general = "restic_general:{name}:{last_run}:{errors}:{total_duration_seconds}"
+        prometheus._restic_general = (
+            "restic_general:{name}:{last_run}:{errors}:{total_duration_seconds}"
+        )
         for sc in scenarios:
             with self.subTest(sc["name"]):
                 expected_lines = [
@@ -113,7 +126,11 @@ class TestResticMetricsPrometheus(TestCase):
                     "repo1": {
                         "files": {"new": "1", "changed": "2", "unmodified": "3"},
                         "dirs": {"new": "1", "changed": "2", "unmodified": "3"},
-                        "processed": {"files": "1", "size_bytes": 2, "duration_seconds": 3},
+                        "processed": {
+                            "files": "1",
+                            "size_bytes": 2,
+                            "duration_seconds": 3,
+                        },
                         "added_to_repo": 7,
                         "duration_seconds": 9,
                         "rc": 0,
@@ -121,7 +138,11 @@ class TestResticMetricsPrometheus(TestCase):
                     "repo2": {
                         "files": {"new": "1", "changed": "2", "unmodified": "3"},
                         "dirs": {"new": "1", "changed": "2", "unmodified": "3"},
-                        "processed": {"files": "1", "size_bytes": 2, "duration_seconds": 3},
+                        "processed": {
+                            "files": "1",
+                            "size_bytes": 2,
+                            "duration_seconds": 3,
+                        },
                         "added_to_repo": 5,
                         "duration_seconds": 8,
                         "rc": 1,
@@ -143,7 +164,11 @@ class TestResticMetricsPrometheus(TestCase):
                     "repo1": {
                         "files": {"new": "1", "changed": "2", "unmodified": "3"},
                         "dirs": {"new": "1", "changed": "2", "unmodified": "3"},
-                        "processed": {"files": "1", "size_bytes": 2, "duration_seconds": 3},
+                        "processed": {
+                            "files": "1",
+                            "size_bytes": 2,
+                            "duration_seconds": 3,
+                        },
                         "added_to_repo": 7,
                         "duration_seconds": 9,
                         "rc": 0,
@@ -151,7 +176,11 @@ class TestResticMetricsPrometheus(TestCase):
                     "repo2": {
                         "files": {"new": "1", "changed": "2", "unmodified": "3"},
                         "dirs": {"new": "1", "changed": "2", "unmodified": "3"},
-                        "processed": {"files": "1", "size_bytes": 2, "duration_seconds": 3},
+                        "processed": {
+                            "files": "1",
+                            "size_bytes": 2,
+                            "duration_seconds": 3,
+                        },
                         "added_to_repo": 5,
                         "duration_seconds": 8,
                         "rc": 1,
@@ -169,7 +198,9 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.backup_metrics(scenarios[0]["metrics"], "my_backup")
         # check call with simplified output
         prometheus._restic_help_backup = "restic_help_backup|"
-        prometheus._restic_backup = "restic_backup_data:{name}:{added_to_repo}:{duration_seconds}|"
+        prometheus._restic_backup = (
+            "restic_backup_data:{name}:{added_to_repo}:{duration_seconds}|"
+        )
         for sc in scenarios:
             with self.subTest(sc["name"]):
                 lines = prometheus.backup_metrics(sc["metrics"], "my_backup")
@@ -195,15 +226,19 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.forget_metrics(metrics, "my_forget")
         # check call with simplified output
         prometheus._restic_help_forget = "restic_help_forget|"
-        prometheus._restic_forget = "restic_forget_data:{name}:{removed_snapshots}:{duration_seconds}|"
+        prometheus._restic_forget = (
+            "restic_forget_data:{name}:{removed_snapshots}:{duration_seconds}|"
+        )
         lines = prometheus.forget_metrics(metrics, "my_forget")
         self.assertEqual(
             lines,
-            "|".join([
-                "restic_help_forget",
-                "restic_forget_data:my_forget:7:9",
-                'restic_forget_rc{config="my_forget",repository="repo2"} 1\n',
-            ]),
+            "|".join(
+                [
+                    "restic_help_forget",
+                    "restic_forget_data:my_forget:7:9",
+                    'restic_forget_rc{config="my_forget",repository="repo2"} 1\n',
+                ]
+            ),
         )
 
     def test_new_prune_metrics(self):
@@ -263,17 +298,23 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.prune_metrics(metrics, "my_prune")
         # check call with simplified output
         prometheus._restic_help_prune = "restic_help_prune|"
-        prometheus._restic_prune = "restic_prune_data:{name}:{containing_packs_before}:{duration_seconds}|"
-        prometheus._restic_new_prune = "restic_prune_data:{name}:{to_repack_blobs}:{duration_seconds}|"
+        prometheus._restic_prune = (
+            "restic_prune_data:{name}:{containing_packs_before}:{duration_seconds}|"
+        )
+        prometheus._restic_new_prune = (
+            "restic_prune_data:{name}:{to_repack_blobs}:{duration_seconds}|"
+        )
         lines = prometheus.prune_metrics(metrics, "my_prune")
         self.assertEqual(
             lines,
-            "|".join([
-                "restic_help_prune",
-                "restic_prune_data:my_prune:576:4.2",
-                "restic_prune_data:my_prune:864:7.3",
-                'restic_prune_rc{config="my_prune",repository="/tmp/restic-repo3"} 1\n',
-            ]),
+            "|".join(
+                [
+                    "restic_help_prune",
+                    "restic_prune_data:my_prune:576:4.2",
+                    "restic_prune_data:my_prune:864:7.3",
+                    'restic_prune_rc{config="my_prune",repository="/tmp/restic-repo3"} 1\n',
+                ]
+            ),
         )
 
     def test_check_metrics(self):
@@ -301,15 +342,19 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.check_metrics(metrics, "my_check")
         # check call with simplified output
         prometheus._restic_help_check = "restic_help_check|"
-        prometheus._restic_check = "restic_check_data:{name}:{errors_snapshots}:{duration_seconds}|"
+        prometheus._restic_check = (
+            "restic_check_data:{name}:{errors_snapshots}:{duration_seconds}|"
+        )
         lines = prometheus.check_metrics(metrics, "my_check")
         self.assertEqual(
             lines,
-            "|".join([
-                "restic_help_check",
-                "restic_check_data:my_check:7:9",
-                'restic_check_rc{config="my_check",repository="/tmp/restic-repo2"} 1\n',
-            ]),
+            "|".join(
+                [
+                    "restic_help_check",
+                    "restic_check_data:my_check:7:9",
+                    'restic_check_rc{config="my_check",repository="/tmp/restic-repo2"} 1\n',
+                ]
+            ),
         )
 
     def test_stats_metrics(self):
@@ -331,13 +376,17 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.stats_metrics(metrics, "my_stats")
         # stats call with simplified output
         prometheus._restic_help_stats = "restic_help_stats|"
-        prometheus._restic_stats = "restic_stats_data:{name}:{total_file_count}:{duration_seconds}|"
+        prometheus._restic_stats = (
+            "restic_stats_data:{name}:{total_file_count}:{duration_seconds}|"
+        )
         lines = prometheus.stats_metrics(metrics, "my_stats")
         self.assertEqual(
             lines,
-            "|".join([
-                "restic_help_stats",
-                "restic_stats_data:my_stats:7:9",
-                'restic_stats_rc{config="my_stats",repository="/tmp/restic-repo2"} 1\n',
-            ]),
+            "|".join(
+                [
+                    "restic_help_stats",
+                    "restic_stats_data:my_stats:7:9",
+                    'restic_stats_rc{config="my_stats",repository="/tmp/restic-repo2"} 1\n',
+                ]
+            ),
         )

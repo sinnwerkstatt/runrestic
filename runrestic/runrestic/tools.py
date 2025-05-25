@@ -1,11 +1,28 @@
+"""
+This module provides utility functions for parsing and manipulating data related to Restic operations.
+
+It includes functions to parse sizes, times, and lines of text using regular expressions, as well as
+a utility to deeply update nested dictionaries. These functions are used throughout the application
+to process and format data.
+"""
+
 import logging
 import re
-from typing import Any, Dict, Union
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 
 
 def make_size(size: int) -> str:
+    """
+    Convert a size in bytes to a human-readable string with appropriate units.
+
+    Args:
+        size (int): The size in bytes.
+
+    Returns:
+        str: The size formatted as a human-readable string (e.g., "1.23 GiB").
+    """
     if size > 1 << 40:
         return f"{size / (1 << 40):.2f} TiB"
     if size > 1 << 30:
@@ -18,6 +35,15 @@ def make_size(size: int) -> str:
 
 
 def parse_size(size: str) -> float:
+    """
+    Parse a human-readable size string into a size in bytes.
+
+    Args:
+        size (str): The size string (e.g., "1.23 GiB").
+
+    Returns:
+        float: The size in bytes. Returns 0.0 if parsing fails.
+    """
     re_bytes = re.compile(r"([0-9.]+) ?([a-zA-Z]*B)")
     try:
         number, unit = re_bytes.findall(size)[0]
@@ -35,10 +61,19 @@ def parse_size(size: str) -> float:
         "GiB": 2**30,
         "TiB": 2**40,
     }
-    return float(number) * units[unit]
+    return float(number) * units.get(unit, 1)
 
 
 def parse_time(time_str: str) -> int:
+    """
+    Parse a time string in the format "HH:MM:SS" or "MM:SS" into seconds.
+
+    Args:
+        time_str (str): The time string to parse.
+
+    Returns:
+        int: The total time in seconds. Returns 0 if parsing fails.
+    """
     re_time = re.compile(r"(?:([0-9]+):)?([0-9]+):([0-9]+)")
     try:
         hours, minutes, seconds = (
@@ -54,7 +89,17 @@ def parse_time(time_str: str) -> int:
     return seconds
 
 
-def deep_update(base: Dict[Any, Any], update: Dict[Any, Any]) -> Dict[Any, Any]:
+def deep_update(base: dict[Any, Any], update: dict[Any, Any]) -> dict[Any, Any]:
+    """
+    Recursively update a nested dictionary with values from another dictionary.
+
+    Args:
+        base (dict[Any, Any]): The base dictionary to update.
+        update (dict[Any, Any]): The dictionary with updates.
+
+    Returns:
+        dict[Any, Any]: A new dictionary with the updates applied.
+    """
     new = base.copy()
     for key, value in update.items():
         base_value = new.get(key, {})
@@ -67,40 +112,44 @@ def deep_update(base: Dict[Any, Any], update: Dict[Any, Any]) -> Dict[Any, Any]:
     return new
 
 
-def parse_line(  # type: ignore[no-untyped-def]
+ParsedType = TypeVar("ParsedType", str, tuple[str, ...])
+
+
+def parse_line(
     regex: str,
     output: str,
-    default: Union[str, tuple],  # type: ignore[type-arg]
-):
-    r"""Parse line with provided regex and return matched variables.
-    If there is no match in the output, the variables will be unchanged
-    (with their defaults)
+    default: ParsedType,
+) -> ParsedType:
+    r"""
+    Parse a line of text using a regular expression and return matched variables.
 
-    Parameters
-    ----------
-    regex : str
-        Regex to match the requested variables
-    output : str
-        Output text to be parsed
-    default: str or tuple
-        List of default values in case the regex parsing fails.
+    If there is no match in the output, the variables will be returned with their default values.
 
-    Returns
-    -------
-    str or tuple
-        Parsed result or default
+    Args:
+        regex (str): The regular expression to match the requested variables.
+        output (str): The text output to be parsed.
+        default (T): Default values to return if parsing fails.
 
-    Examples
-    --------
-    parse_line(
-        output=output,
-        regex=r"Files:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified",
-        ("0", "0", "0")
-    )
+    Returns:
+        ParsedType: The parsed result or the default values.
+
+    Examples:
+        >>> parse_line(
+        ...     regex=r"Files:\s+([0-9]+) new,\s+([0-9]+) changed,\s+([0-9]+) unmodified",
+        ...     output="Files: 10 new, 5 changed, 20 unmodified",
+        ...     default=("0", "0", "0")
+        ... )
+        ('10', '5', '20')
     """
     try:
         parsed = re.findall(regex, output)[0]
     except IndexError:
         logger.error("No match in output for regex '%s'", regex)
         return default
-    return parsed
+    if isinstance(parsed, type(default)):
+        return parsed
+    else:
+        logger.error(
+            f"The format of the parsed output '{parsed}' does not match the expected format as per default '{default}'.",
+        )
+    return default
