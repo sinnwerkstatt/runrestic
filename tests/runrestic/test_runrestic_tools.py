@@ -114,3 +114,16 @@ def test_parse_line_no_match_three():
         OUTPUT,
         ("-1", "-1", "-1"),
     ) == ("-1", "-1", "-1")
+
+
+def test_parse_line_type_mismatch():
+    # Test if the parsed type matches the type provided in the default
+    # In this test, the parsed type is a tuple, while the default is a string
+    assert (
+        parse_line(
+            r"Three counters: value 1: ([\d\.]+), value 2: (\d+), value 3: ([\d\.]+ [kMG]?B)",
+            OUTPUT,
+            "-1",
+        )
+        == "-1"
+    )

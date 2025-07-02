@@ -12,6 +12,9 @@ class TestResticShell(TestCase):
             # Set a default shell for the test environment
             os.environ["SHELL"] = "/bin/bash"
 
+    # def tearDown(self) -> None:
+    #     pass
+
     @patch("runrestic.restic.shell.logger")
     @patch("runrestic.restic.shell.sys.exit")
     def test_restic_shell_single_repo(self, mock_sys_exit, mock_logger):
@@ -87,7 +90,7 @@ class TestResticShell(TestCase):
         with self.assertRaises(ValueError) as context:
             shell.restic_shell(configs)
 
-        self.assertEqual(
-            str(context.exception),
-            "invalid literal for int() with base 10: 'X'",
+        self.assertTrue(
+            str(context.exception)
+            == "Invalid selection. Please choose a valid repository index."
         )
