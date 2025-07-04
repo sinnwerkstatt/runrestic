@@ -103,9 +103,7 @@ class TestResticMetricsPrometheus(TestCase):
             "total_duration_seconds": 12,
         }
         prometheus._restic_help_general = "restic_help_general"
-        prometheus._restic_general = (
-            "restic_general:{name}:{last_run}:{errors}:{total_duration_seconds}"
-        )
+        prometheus._restic_general = "restic_general:{name}:{last_run}:{errors}:{total_duration_seconds}"
         for sc in scenarios:
             with self.subTest(sc["name"]):
                 expected_lines = [
@@ -198,9 +196,7 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.backup_metrics(scenarios[0]["metrics"], "my_backup")
         # check call with simplified output
         prometheus._restic_help_backup = "restic_help_backup|"
-        prometheus._restic_backup = (
-            "restic_backup_data:{name}:{added_to_repo}:{duration_seconds}|"
-        )
+        prometheus._restic_backup = "restic_backup_data:{name}:{added_to_repo}:{duration_seconds}|"
         for sc in scenarios:
             with self.subTest(sc["name"]):
                 lines = prometheus.backup_metrics(sc["metrics"], "my_backup")
@@ -226,19 +222,15 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.forget_metrics(metrics, "my_forget")
         # check call with simplified output
         prometheus._restic_help_forget = "restic_help_forget|"
-        prometheus._restic_forget = (
-            "restic_forget_data:{name}:{removed_snapshots}:{duration_seconds}|"
-        )
+        prometheus._restic_forget = "restic_forget_data:{name}:{removed_snapshots}:{duration_seconds}|"
         lines = prometheus.forget_metrics(metrics, "my_forget")
         self.assertEqual(
             lines,
-            "|".join(
-                [
-                    "restic_help_forget",
-                    "restic_forget_data:my_forget:7:9",
-                    'restic_forget_rc{config="my_forget",repository="repo2"} 1\n',
-                ]
-            ),
+            "|".join([
+                "restic_help_forget",
+                "restic_forget_data:my_forget:7:9",
+                'restic_forget_rc{config="my_forget",repository="repo2"} 1\n',
+            ]),
         )
 
     def test_new_prune_metrics(self):
@@ -298,23 +290,17 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.prune_metrics(metrics, "my_prune")
         # check call with simplified output
         prometheus._restic_help_prune = "restic_help_prune|"
-        prometheus._restic_prune = (
-            "restic_prune_data:{name}:{containing_packs_before}:{duration_seconds}|"
-        )
-        prometheus._restic_new_prune = (
-            "restic_prune_data:{name}:{to_repack_blobs}:{duration_seconds}|"
-        )
+        prometheus._restic_prune = "restic_prune_data:{name}:{containing_packs_before}:{duration_seconds}|"
+        prometheus._restic_new_prune = "restic_prune_data:{name}:{to_repack_blobs}:{duration_seconds}|"
         lines = prometheus.prune_metrics(metrics, "my_prune")
         self.assertEqual(
             lines,
-            "|".join(
-                [
-                    "restic_help_prune",
-                    "restic_prune_data:my_prune:576:4.2",
-                    "restic_prune_data:my_prune:864:7.3",
-                    'restic_prune_rc{config="my_prune",repository="/tmp/restic-repo3"} 1\n',
-                ]
-            ),
+            "|".join([
+                "restic_help_prune",
+                "restic_prune_data:my_prune:576:4.2",
+                "restic_prune_data:my_prune:864:7.3",
+                'restic_prune_rc{config="my_prune",repository="/tmp/restic-repo3"} 1\n',
+            ]),
         )
 
     def test_check_metrics(self):
@@ -342,19 +328,15 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.check_metrics(metrics, "my_check")
         # check call with simplified output
         prometheus._restic_help_check = "restic_help_check|"
-        prometheus._restic_check = (
-            "restic_check_data:{name}:{errors_snapshots}:{duration_seconds}|"
-        )
+        prometheus._restic_check = "restic_check_data:{name}:{errors_snapshots}:{duration_seconds}|"
         lines = prometheus.check_metrics(metrics, "my_check")
         self.assertEqual(
             lines,
-            "|".join(
-                [
-                    "restic_help_check",
-                    "restic_check_data:my_check:7:9",
-                    'restic_check_rc{config="my_check",repository="/tmp/restic-repo2"} 1\n',
-                ]
-            ),
+            "|".join([
+                "restic_help_check",
+                "restic_check_data:my_check:7:9",
+                'restic_check_rc{config="my_check",repository="/tmp/restic-repo2"} 1\n',
+            ]),
         )
 
     def test_stats_metrics(self):
@@ -376,17 +358,13 @@ class TestResticMetricsPrometheus(TestCase):
         _lines = prometheus.stats_metrics(metrics, "my_stats")
         # stats call with simplified output
         prometheus._restic_help_stats = "restic_help_stats|"
-        prometheus._restic_stats = (
-            "restic_stats_data:{name}:{total_file_count}:{duration_seconds}|"
-        )
+        prometheus._restic_stats = "restic_stats_data:{name}:{total_file_count}:{duration_seconds}|"
         lines = prometheus.stats_metrics(metrics, "my_stats")
         self.assertEqual(
             lines,
-            "|".join(
-                [
-                    "restic_help_stats",
-                    "restic_stats_data:my_stats:7:9",
-                    'restic_stats_rc{config="my_stats",repository="/tmp/restic-repo2"} 1\n',
-                ]
-            ),
+            "|".join([
+                "restic_help_stats",
+                "restic_stats_data:my_stats:7:9",
+                'restic_stats_rc{config="my_stats",repository="/tmp/restic-repo2"} 1\n',
+            ]),
         )

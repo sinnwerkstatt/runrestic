@@ -82,9 +82,7 @@ def cli_arguments(args: list[str] | None = None) -> tuple[Namespace, list[str]]:
         metavar="INTERVAL",
         help="Updated interval in seconds for restic progress (default: None)",
     )
-    parser.add_argument(
-        "-v", "--version", action="version", version="%(prog)s " + __version__
-    )
+    parser.add_argument("-v", "--version", action="version", version="%(prog)s " + __version__)
 
     options, extras = parser.parse_known_args(args)
     if extras:
@@ -109,9 +107,7 @@ def possible_config_paths() -> list[str]:
     Returns:
         list[str]: A list of paths where configuration files might be located.
     """
-    user_config_directory = os.getenv("XDG_CONFIG_HOME") or os.path.expandvars(
-        os.path.join("$HOME", ".config")
-    )
+    user_config_directory = os.getenv("XDG_CONFIG_HOME") or os.path.expandvars(os.path.join("$HOME", ".config"))
     return [
         "/etc/runrestic.toml",
         "/etc/runrestic.json",
@@ -141,9 +137,7 @@ def configuration_file_paths() -> list[str]:
 
         for filename in os.listdir(path):
             filename = os.path.join(path, filename)
-            if (
-                filename.endswith(".toml") or filename.endswith(".json")
-            ) and os.path.isfile(filename):
+            if (filename.endswith(".toml") or filename.endswith(".json")) and os.path.isfile(filename):
                 octal_permissions = oct(os.stat(filename).st_mode)
                 if octal_permissions[-2:] != "00":  # file permissions are too broad
                     logger.warning(
@@ -173,11 +167,7 @@ def parse_configuration(config_filename: str) -> dict[str, Any]:
     """
     logger.debug("Parsing configuration file: %s", config_filename)
     with open(config_filename, encoding="utf-8") as file:
-        config: dict[str, Any] = (
-            toml.load(file)
-            if str(config_filename).endswith(".toml")
-            else json.load(file)
-        )
+        config: dict[str, Any] = toml.load(file) if str(config_filename).endswith(".toml") else json.load(file)
     config = deep_update(CONFIG_DEFAULTS, dict(config))
 
     if "name" not in config:

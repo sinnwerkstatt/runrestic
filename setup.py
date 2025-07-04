@@ -30,9 +30,7 @@ setup(
         "Topic :: Security :: Cryptography",
         "Topic :: System :: Archiving :: Backup",
     ],
-    entry_points={
-        "console_scripts": ["runrestic = runrestic.runrestic.runrestic:runrestic"]
-    },
+    entry_points={"console_scripts": ["runrestic = runrestic.runrestic.runrestic:runrestic"]},
     packages=[
         "runrestic",
         "runrestic.metrics",

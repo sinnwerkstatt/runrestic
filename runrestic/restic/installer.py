@@ -28,9 +28,7 @@ def restic_check() -> bool:
     """
     if which("restic"):
         return True
-    carry_on = input(
-        "There seems to be no restic on your system. Should I install it now? [Y/n] "
-    )
+    carry_on = input("There seems to be no restic on your system. Should I install it now? [Y/n] ")
     if carry_on in ["", "y", "Y"]:
         download_restic()
         return True
@@ -46,9 +44,7 @@ def download_restic() -> None:
     If permissions are insufficient, the user is prompted to provide an alternative path.
     """
     try:
-        response = requests.get(
-            "https://api.github.com/repos/restic/restic/releases/latest", timeout=10
-        )
+        response = requests.get("https://api.github.com/repos/restic/restic/releases/latest", timeout=10)
         response.raise_for_status()
         github_json = json.loads(response.content)
     except requests.exceptions.Timeout:

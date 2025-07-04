@@ -68,31 +68,17 @@ def test_parse_line_match_one():
 
 def test_parse_line_no_match_one():
     default = "-1"
-    assert (
-        parse_line(r"Dummy counter NONE: (\d+) something", OUTPUT, default) == default
-    )
+    assert parse_line(r"Dummy counter NONE: (\d+) something", OUTPUT, default) == default
 
 
 def test_parse_line_match_two():
-    assert parse_line(
-        r"Two counters: value 1: (\d+), value 2: ([\d\.]+)", OUTPUT, ("-1", "-1")
-    ) == ("456", "7.89")
+    assert parse_line(r"Two counters: value 1: (\d+), value 2: ([\d\.]+)", OUTPUT, ("-1", "-1")) == ("456", "7.89")
 
 
 def test_parse_line_no_match_two():
     default = ("0", "0.0")
-    assert (
-        parse_line(
-            r"Two counters: value 1: (\d+) NO, value 2: ([\d\.]+)", OUTPUT, default
-        )
-        == default
-    )
-    assert (
-        parse_line(
-            r"Two counters: value 1: (\d+) NO, value 2: ([\d\.]+)", OUTPUT_2, default
-        )
-        == default
-    )
+    assert parse_line(r"Two counters: value 1: (\d+) NO, value 2: ([\d\.]+)", OUTPUT, default) == default
+    assert parse_line(r"Two counters: value 1: (\d+) NO, value 2: ([\d\.]+)", OUTPUT_2, default) == default
 
 
 def test_parse_line_match_three():

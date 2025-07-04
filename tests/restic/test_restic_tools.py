@@ -34,8 +34,7 @@ def fake_retry_process(
     return {
         "current_try": count,
         "tries_total": 3,
-        "output": [(1, f"fail{i}") for i in range(1, count)]
-        + ([(0, "pass")] if retry_count + 1 >= count else []),
+        "output": [(1, f"fail{i}") for i in range(1, count)] + ([(0, "pass")] if retry_count + 1 >= count else []),
         "time": count / 10,
     }
 
@@ -266,6 +265,4 @@ def test_redact_password():
     ]
     pw_replacement = "******"
     for repo_str in repo_strings:
-        assert redact_password(
-            repo_str.format(password), pw_replacement
-        ) == repo_str.format(pw_replacement)
+        assert redact_password(repo_str.format(password), pw_replacement) == repo_str.format(pw_replacement)
