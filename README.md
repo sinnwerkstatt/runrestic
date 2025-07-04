@@ -1,5 +1,5 @@
 ![python version](https://img.shields.io/badge/python-3.7+-blue.svg)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/psf/ruff)
 ![Travis (.com)](https://api.travis-ci.com/sinnwerkstatt/runrestic.svg?branch=main)
 ![PyPI](https://img.shields.io/pypi/v/runrestic)
 [![Stackshare: runrestic](https://img.shields.io/badge/stackshare-runrestic-068DFE.svg)](https://stackshare.io/runrestic)
@@ -143,6 +143,7 @@ sudo chmod +x /etc/cron.d/runrestic
   - Add and update docstrings
   - Add and update type hints
   - Minor code improvements and test coverage
+  - Replace `black` formatter with `ruff` and increase max line length
 - v0.5.30
   - Fix metric setting in restic runner for "check"
   - Support Python 3.13
@@ -201,6 +202,12 @@ poetry install
 
 ```bash
 poetry run pytest
+```
+
+### Format files
+
+```bash
+poetry run ruff format
 ```
 
 ### Using VScode devcontainer

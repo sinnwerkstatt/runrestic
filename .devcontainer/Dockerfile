@@ -17,7 +17,7 @@ RUN add-apt-repository ppa:deadsnakes/ppa \
 ENV PIPX_HOME=/usr/local/py-utils \
     PIPX_BIN_DIR=/usr/local/py-utils/bin
 ENV PATH=${PATH}:${PIPX_BIN_DIR}
-RUN pipx install black
+RUN pipx install ruff
 RUN pipx install isort
 RUN pipx install mypy
 RUN pipx install poetry

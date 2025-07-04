@@ -7,9 +7,7 @@ from runrestic.restic import installer
 class TestInstaller(TestCase):
     def test_restic_check_is_installed(self):
         # Mock the `which` function to simulate restic being installed
-        with patch(
-            "runrestic.restic.installer.which", return_value="/usr/local/bin/restic"
-        ):
+        with patch("runrestic.restic.installer.which", return_value="/usr/local/bin/restic"):
             self.assertTrue(installer.restic_check())
 
     def test_restic_check_do_install(self):
@@ -102,9 +100,7 @@ class TestInstaller(TestCase):
             mock_get.return_value.content = b'{"dummy": 42}'
             with patch("builtins.print") as mock_print:
                 installer.download_restic()
-                mock_print.assert_called_with(
-                    "Error: Could not find a suitable Restic binary to download."
-                )
+                mock_print.assert_called_with("Error: Could not find a suitable Restic binary to download.")
                 mock_get.assert_called_with(
                     "https://api.github.com/repos/restic/restic/releases/latest",
                     timeout=10,
@@ -117,9 +113,7 @@ class TestInstaller(TestCase):
             mock_get.return_value.content = b'{"assets": [{"name": "restic_fake_os.bz2", "browser_download_url": "https://example.com/restic_fake_os.bz2"}]}'
             with patch("builtins.print") as mock_print:
                 installer.download_restic()
-                mock_print.assert_called_with(
-                    "Error: Could not find a suitable Restic binary to download."
-                )
+                mock_print.assert_called_with("Error: Could not find a suitable Restic binary to download.")
                 mock_get.assert_called_with(
                     "https://api.github.com/repos/restic/restic/releases/latest",
                     timeout=10,
@@ -135,25 +129,19 @@ class TestInstaller(TestCase):
             patch("builtins.print") as mock_print,
         ):
             installer.download_restic()
-            mock_print.assert_called_with(
-                "Error: Unable to fetch the latest Restic release due to a timeout."
-            )
+            mock_print.assert_called_with("Error: Unable to fetch the latest Restic release due to a timeout.")
 
     def test_download_restic_request_exception_fetch_release(self):
         # Mock the requests.get method to simulate a request exception
         with (
             patch(
                 "runrestic.restic.installer.requests.get",
-                side_effect=installer.requests.exceptions.RequestException(
-                    "Request failed"
-                ),
+                side_effect=installer.requests.exceptions.RequestException("Request failed"),
             ),
             patch("builtins.print") as mock_print,
         ):
             installer.download_restic()
-            mock_print.assert_called_with(
-                "Error: Unable to fetch the latest Restic release: Request failed"
-            )
+            mock_print.assert_called_with("Error: Unable to fetch the latest Restic release: Request failed")
 
     def test_download_restic_timeout_download_program(self):
         # Mock the requests.get method to simulate a timeout during program download
@@ -178,9 +166,7 @@ class TestInstaller(TestCase):
             patch("builtins.print") as mock_print,
         ):
             installer.download_restic()
-            mock_print.assert_called_with(
-                "Error: Unable to download the Restic binary due to a timeout."
-            )
+            mock_print.assert_called_with("Error: Unable to download the Restic binary due to a timeout.")
 
     def test_download_restic_request_exception_download_program(self):
         # Mock the requests.get method to simulate a request exception
@@ -205,6 +191,4 @@ class TestInstaller(TestCase):
             patch("builtins.print") as mock_print,
         ):
             installer.download_restic()
-            mock_print.assert_called_with(
-                "Error: Unable to download the Restic binary: Request failed"
-            )
+            mock_print.assert_called_with("Error: Unable to download the Restic binary: Request failed")
