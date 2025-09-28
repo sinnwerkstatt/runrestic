@@ -32,7 +32,7 @@ sources = [
     "/var"
     ]
 
-[prune]
+[forget]
 keep-last =  3
 keep-hourly =  5
 ```
@@ -69,7 +69,7 @@ Afterwards, run
 ```bash
 runrestic init # to initialize all the repos in `repositories`
 
-runrestic  # without actions will do: runrestic backup prune check
+runrestic  # without actions will do: runrestic backup forget prune check
 # or
 runrestic [action]
 ```
