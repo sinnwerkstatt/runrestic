@@ -33,7 +33,7 @@ exclude_patterns = ['pg_stats_tmp/']
 pre_hooks = ["systemctl stop postgresql"]
 post_hooks = ["systemctl start postgresql"]
 
-[prune]
+[forget]
 keep-last =  3
 keep-hourly =  5
 keep-weekly = 10

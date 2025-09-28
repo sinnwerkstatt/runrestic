@@ -8,7 +8,7 @@
     "repositories",
     "environment",
     "backup",
-    "prune"
+    "forget"
   ],
   "properties": {
     "name": {"type": "string"},
@@ -72,7 +72,7 @@
       }
     },
 
-    "prune": {
+    "forget": {
       "type": "object",
       "anyOf": [
         {"required": ["keep-last"]},
@@ -84,6 +84,21 @@
         {"required": ["keep-within"]},
         {"required": ["keep-tag"]}
       ],
+      "properties": {
+        "keep-last": {"type": "integer"},
+        "keep-hourly": {"type": "integer"},
+        "keep-daily": {"type": "integer"},
+        "keep-weekly": {"type": "integer"},
+        "keep-monthly": {"type": "integer"},
+        "keep-yearly": {"type": "integer"},
+        "keep-within": {"type": "string"},
+        "keep-tag": {"type": "string"},
+        "group-by": {"type": "string"}
+      }
+    },
+
+    "prune": {
+      "type": "object",
       "properties": {
         "keep-last": {"type": "integer"},
         "keep-hourly": {"type": "integer"},

@@ -83,7 +83,7 @@ def restic_minimal_good_conf(restic_dir, request):
         'RESTIC_PASSWORD = "CHANGEME"\n'
         "[backup]\n"
         'sources = ["/etc"]\n'
-        "[prune]\n"
+        "[forget]\n"
         "keep-last = 10\n"
     )
     # Optionally add the "name" field if specified in the test
@@ -180,7 +180,7 @@ def test_parse_configuration_good_conf(restic_minimal_good_conf, expected_name):
             "retry_count": 0,
         },
         "backup": {"sources": ["/etc"]},
-        "prune": {"keep-last": 10},
+        "forget": {"keep-last": 10},
     }
 
 
