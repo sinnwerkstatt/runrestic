@@ -175,7 +175,7 @@ class ResticRunner:
             commands, self.config["execution"], direct_abort_reasons
         ).run()
 
-        for repo, process_infos in zip(self.repos, cmd_runs):
+        for repo, process_infos in zip(self.repos, cmd_runs, strict=False):
             return_code = process_infos["output"][-1][0]
             if return_code > 0:
                 logger.warning(process_infos)
@@ -248,7 +248,7 @@ class ResticRunner:
             abort_reasons=direct_abort_reasons,
         ).run()
 
-        for repo, process_infos in zip(self.repos, cmd_runs):
+        for repo, process_infos in zip(self.repos, cmd_runs, strict=False):
             return_code = process_infos["output"][-1][0]
             if return_code > 0:
                 logger.warning(process_infos["output"])
@@ -280,7 +280,7 @@ class ResticRunner:
             abort_reasons=direct_abort_reasons,
         ).run()
 
-        for repo, process_infos in zip(self.repos, cmd_runs):
+        for repo, process_infos in zip(self.repos, cmd_runs, strict=False):
             return_code = process_infos["output"][-1][0]
             if return_code > 0:
                 logger.warning(process_infos["output"])
@@ -328,7 +328,7 @@ class ResticRunner:
             abort_reasons=direct_abort_reasons,
         ).run()
 
-        for repo, process_infos in zip(self.repos, cmd_runs):
+        for repo, process_infos in zip(self.repos, cmd_runs, strict=False):
             metrics = {
                 "errors": 0,
                 "errors_data": 0,
@@ -373,7 +373,7 @@ class ResticRunner:
             abort_reasons=direct_abort_reasons,
         ).run()
 
-        for repo, process_infos in zip(self.repos, cmd_runs):
+        for repo, process_infos in zip(self.repos, cmd_runs, strict=False):
             return_code = process_infos["output"][-1][0]
             if return_code > 0:
                 logger.warning(process_infos["output"])

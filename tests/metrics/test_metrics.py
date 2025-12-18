@@ -232,7 +232,7 @@ class TestResticMetricsPrometheus(TestCase):
         lines = prometheus.forget_metrics(metrics, "my_forget")
         self.assertEqual(
             lines,
-            "|".join(
+            "|".join(  # noqa: FLY002
                 [
                     "restic_help_forget",
                     "restic_forget_data:my_forget:7:9",
@@ -307,7 +307,7 @@ class TestResticMetricsPrometheus(TestCase):
         lines = prometheus.prune_metrics(metrics, "my_prune")
         self.assertEqual(
             lines,
-            "|".join(
+            "|".join(  # noqa: FLY002
                 [
                     "restic_help_prune",
                     "restic_prune_data:my_prune:576:4.2",
@@ -348,7 +348,7 @@ class TestResticMetricsPrometheus(TestCase):
         lines = prometheus.check_metrics(metrics, "my_check")
         self.assertEqual(
             lines,
-            "|".join(
+            "|".join(  # noqa: FLY002
                 [
                     "restic_help_check",
                     "restic_check_data:my_check:7:9",
@@ -382,7 +382,7 @@ class TestResticMetricsPrometheus(TestCase):
         lines = prometheus.stats_metrics(metrics, "my_stats")
         self.assertEqual(
             lines,
-            "|".join(
+            "|".join(  # noqa: FLY002
                 [
                     "restic_help_stats",
                     "restic_stats_data:my_stats:7:9",

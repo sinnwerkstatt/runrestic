@@ -11,10 +11,11 @@ import logging
 import os
 import re
 import time
+from collections.abc import Sequence
 from concurrent.futures import Future
 from concurrent.futures.process import ProcessPoolExecutor
 from subprocess import PIPE, STDOUT, Popen
-from typing import IO, Any, Sequence
+from typing import IO, Any
 
 from runrestic.runrestic.tools import parse_time
 
@@ -133,9 +134,9 @@ def retry_process(
     for i in range(tries_total):
         status["current_try"] = i + 1
 
-        with Popen(
+        with Popen(  # noqa: S603
             cmd, stdout=PIPE, stderr=STDOUT, shell=shell, encoding="UTF-8"
-        ) as process:  # noqa: S603
+        ) as process:
             output = log_messages(process.stdout, proc_cmd)
         returncode = process.returncode
         status["output"].append((returncode, output))

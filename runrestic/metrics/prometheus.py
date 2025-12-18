@@ -7,7 +7,8 @@ based on the parsed Restic output. The metrics include information about backup,
 forget, prune, check, and stats operations.
 """
 
-from typing import Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 # Prometheus metric templates for general metrics
 _restic_help_general = """

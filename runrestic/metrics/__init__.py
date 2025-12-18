@@ -1,9 +1,9 @@
-from typing import Any, Dict
+from typing import Any
 
 from . import prometheus
 
 
-def write_metrics(metrics: Dict[str, Any], config: Dict[str, Any]) -> None:
+def write_metrics(metrics: dict[str, Any], config: dict[str, Any]) -> None:
     configuration = config["metrics"]
     if "prometheus" in configuration:
         lines = prometheus.generate_lines(metrics, config["name"])

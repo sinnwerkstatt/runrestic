@@ -1,0 +1,42 @@
+target-version = "py310"
+exclude = [
+    ".venv",
+    ".eggs",
+    ".git",
+]
+
+[lint]
+select = [
+    "B",
+    "C",
+    "E",
+    "W",
+    "F",
+    "FLY",
+    "DJ",
+    "I",
+    "N",
+    "S",
+    "PLC",
+    "RUF",
+    "UP",
+]
+ignore = [
+    "E501", # line too long 🤷
+]
+
+[lint.isort]
+known-first-party = ["apps"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+
+    "first-party",
+    "local-folder"
+]
+
+[lint.per-file-ignores]
+"tests/**/test_*.py" = [
+    "S101", # allow `asserts` in tests
+]

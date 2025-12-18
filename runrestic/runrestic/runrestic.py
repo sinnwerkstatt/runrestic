@@ -94,7 +94,7 @@ def runrestic() -> None:
         if not config_file_paths:
             raise FileNotFoundError(
                 f"Error: No configuration files found in {possible_config_paths()}"
-            )  # noqa: TRY003
+            )
 
     configs: list[dict[str, Any]] = []
     for config in config_file_paths:
