@@ -1,12 +1,10 @@
-[tool.poetry]
+[project]
 name = "runrestic"
 version = "0.5.30"
 description = "A wrapper script for Restic backup software that inits, creates, prunes and checks backups"
 license = "GPL-3.0+"
-authors = [ "Andreas Nüßlein <andreas@nuessle.in>" ]
+authors = [ { name="Andreas Nüßlein", email="andreas@nuessle.in" } ]
 readme = 'README.md'
-repository = "https://github.com/sinnwerkstatt/runrestic"
-homepage = "https://github.com/sinnwerkstatt/runrestic"
 keywords = ["backup"]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -16,46 +14,33 @@ classifiers = [
   "Topic :: Security :: Cryptography",
   "Topic :: System :: Archiving :: Backup",
 ]
+requires-python = ">=3.10"
 
-[tool.poetry.dependencies]
-python = ">=3.10"
-toml = "^0.10"
-jsonschema = ">3.0"
-requests = ">2.27.1"
 
-[tool.poetry.group.dev.dependencies]
-ipdb = "*"
-black = { version = "*", allow-prereleases = true }
-mypy = "*"
-pytest = "*"
-pytest-cov = "*"
-pytest-subprocess = "*"
-importlib-metadata = { version = ">=4.0", python = ">=3.10" }
-types-requests = "*"
-types-toml = "*"
+dependencies = [
+    "jsonschema>3.0",
+    "requests>=2.27.1",
+    "toml>=0.10",
+]
 
-[tool.poetry.scripts]
+[dependency-groups]
+dev = [
+    "ipdb>=0.13.13",
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pytest-subprocess>=1.5.3",
+    "ruff>=0.14.9",
+    "types-requests>=2.32.4.20250913",
+    "types-toml>=0.10.8.20240310",
+]
+
+[project.urls]
+repository = "https://github.com/sinnwerkstatt/runrestic"
+homepage = "https://github.com/sinnwerkstatt/runrestic"
+
+[project.scripts]
 runrestic = 'runrestic.runrestic.runrestic:runrestic'
 
-[tool.black]
-line-length = 88
-target-version = ['py310', 'py311', 'py312', 'py313']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-)/
-'''
-
-[tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = false
-line_length = 88
-known_first_party = 'apps'
-default_section = 'THIRDPARTY'
-sections = 'FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,LOCALFOLDER'
-no_lines_before = 'LOCALFOLDER'
-
+[tool.uv]
+package = true

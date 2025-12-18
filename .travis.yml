@@ -1,4 +1,4 @@
-dist: bionic
+dist: noble
 language: python
 python:
   - "3.10"
@@ -8,15 +8,15 @@ python:
 #  - "pypy3" lets not do pypy right now
 
 before_install:
-  - pip install poetry
+  - pip install uv
   # Fix issue with Python 3.7 and 3.8 build failure caused by "setuptools"
   #   AttributeError: type object 'Distribution' has no attribute '_finalize_feature_opts'
   - pip install setuptools==60.8.2
 
 install:
-  - poetry install
+  - uv sync
 
 script:
-  - poetry run black . --check
-  - poetry run mypy runrestic --ignore-missing-imports --strict
-  - poetry run pytest
+  - uv run black . --check
+  - uv run mypy runrestic --ignore-missing-imports --strict
+  - uv run pytest

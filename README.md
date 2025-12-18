@@ -181,26 +181,18 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ## Development
 
-This project is managed with [poetry](https://python-poetry.org/)
-
-[Install it](https://github.com/python-poetry/poetry#installation) if not already present:
-
-```bash
-curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-# or
-pip install --user poetry
-```
+This project is managed with [uv](https://docs.astral.sh/uv/).
 
 ### Installing dependencies
 
 ```bash
-poetry install
+uv sync
 ```
 
 ### Running Tests
 
 ```bash
-poetry run pytest
+uv run pytest
 ```
 
 ### Using VScode devcontainer
