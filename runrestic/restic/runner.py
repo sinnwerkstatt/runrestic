@@ -154,6 +154,8 @@ class ResticRunner:
             extra_args += ["--exclude-file", exclude_file]
         for exclude_if_present in cfg.get("exclude_if_present", []):
             extra_args += ["--exclude-if-present", exclude_if_present]
+        for tag in cfg.get("tags", []):
+            extra_args += ["--tag", tag]
 
         commands = [
             [
@@ -233,6 +235,9 @@ class ResticRunner:
                 extra_args += [f"--{key}", str(value)]
             if key == "group-by":
                 extra_args += ["--group-by", value]
+            if key == "tags":
+                for tag in value:
+                    extra_args += ["--tag", tag]
 
         direct_abort_reasons = [
             "Fatal: unable to open config file",
