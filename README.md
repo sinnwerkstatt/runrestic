@@ -138,8 +138,11 @@ sudo chmod +x /etc/cron.d/runrestic
 
 ## Changelog
 
-- pre-v0.5.31
+- v0.5.31
+  - Change for process pool to thread pool
+    - Solves issue with runrestic sometimes hanging.
   - Drop support for Python 3.8 (EOL 2024-10-07) and 3.9 (EOL 2025-10)
+  - Fix build backend for uv
   - Add and update docstrings
   - Add and update type hints
   - Minor code improvements and test coverage
@@ -168,9 +171,7 @@ sudo chmod +x /etc/cron.d/runrestic
 - v0.5.23
   - support JSON config files.
 - v0.5.21
-
   - fix issue where "check" does not count towards overall "errors"-metric
-
 - v**0.5**! Expect breaking changes.
   - metrics output is a bit different
   - see new `parallel` and `retry_*` options.

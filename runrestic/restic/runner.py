@@ -83,6 +83,8 @@ class ResticRunner:
 
         logger.info("Starting '%s': %s", self.config["name"], actions)
         for action in actions:
+            logger.info("Starting '%s': %s", self.config["name"], action)
+            errors = self.metrics["errors"]
             if action == "init":
                 self.init()
             elif action == "backup":
@@ -96,6 +98,12 @@ class ResticRunner:
                 self.stats()
             elif action == "unlock":
                 self.unlock()
+            logger.info(
+                "Finished '%s': %s with %s errors.",
+                self.config["name"],
+                action,
+                self.metrics["errors"] - errors,
+            )
 
         self.metrics["last_run"] = datetime.now().timestamp()
         self.metrics["total_duration_seconds"] = time.time() - start_time
@@ -105,6 +113,12 @@ class ResticRunner:
         if self.log_metrics:
             write_metrics(self.metrics, self.config)
 
+        logger.info(
+            "Finished '%s': %s with %s errors.",
+            self.config["name"],
+            actions,
+            self.metrics["errors"],
+        )
         return self.metrics["errors"]  # type: ignore[no-any-return]
 
     def init(self) -> None:
@@ -322,11 +336,13 @@ class ResticRunner:
             ["restic", "-r", repo, "check", *self.restic_args, *extra_args]
             for repo in self.repos
         ]
+        logger.debug("Starting check with commands: %s", commands)
         cmd_runs = MultiCommand(
             commands,
             config=self.config["execution"],
             abort_reasons=direct_abort_reasons,
         ).run()
+        logger.debug("Finished checks for repos: %s", self.repos)
 
         for repo, process_infos in zip(self.repos, cmd_runs, strict=False):
             metrics = {

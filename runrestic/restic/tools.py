@@ -12,8 +12,7 @@ import os
 import re
 import time
 from collections.abc import Sequence
-from concurrent.futures import Future
-from concurrent.futures.process import ProcessPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from subprocess import PIPE, STDOUT, Popen
 from typing import IO, Any
 
@@ -50,9 +49,6 @@ class MultiCommand:
         self.commands = commands
         self.config = config
         self.abort_reasons = abort_reasons
-        self.process_pool_executor = ProcessPoolExecutor(
-            max_workers=len(commands) if config["parallel"] else 1
-        )
 
     def run(self) -> list[dict[str, Any]]:
         """
@@ -61,15 +57,22 @@ class MultiCommand:
         Returns:
             list[dict[str, Any]]: List of results for each command.
         """
-        for command in self.commands:
-            logger.debug("Spawning %s", command)
-            process = self.process_pool_executor.submit(
-                retry_process, command, self.config, self.abort_reasons
-            )
-            self.processes.append(process)
+        max_workers = len(self.commands) if self.config["parallel"] else 1
+        processes: list[Future[dict[str, Any]]] = []
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            for command in self.commands:
+                logger.debug("Spawning %s", command)
+                fut = executor.submit(
+                    retry_process, command, self.config, self.abort_reasons
+                )
+                logger.debug("Done command: %s", command)
+                processes.append(fut)
 
-        # result() is blocking. The function will return when all processes are done
-        return [process.result() for process in self.processes]
+            # collect results; exceptions propagate
+            results = [p.result() for p in processes]
+
+        # executor automatically shutdowns here
+        return results
 
 
 def log_messages(message: IO[str] | None, proc_cmd: str) -> str:
