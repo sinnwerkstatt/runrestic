@@ -244,6 +244,7 @@ class TestResticRunner(TestCase):
                 "exclude_patterns": ["*.exclude"],
                 "exclude_files": ["dummy_file"],
                 "exclude_if_present": ["*.present"],
+                "tags": ["tagone", "tagtwo"],
             },
             "metrics": {},
         }
@@ -273,6 +274,10 @@ class TestResticRunner(TestCase):
                 "dummy_file",
                 "--exclude-if-present",
                 "*.present",
+                "--tag",
+                "tagone",
+                "--tag",
+                "tagtwo",
                 "/data",
             ],
             [
@@ -289,6 +294,10 @@ class TestResticRunner(TestCase):
                 "dummy_file",
                 "--exclude-if-present",
                 "*.present",
+                "--tag",
+                "tagone",
+                "--tag",
+                "tagtwo",
                 "/data",
             ],
         ]
@@ -462,6 +471,61 @@ class TestResticRunner(TestCase):
         metrics = runner_instance.metrics["forget"]
         self.assertEqual(metrics["repo"], {"forgotten": True})
         self.assertEqual(runner_instance.metrics["errors"], 0)
+
+    @patch("runrestic.restic.runner.MultiCommand")
+    @patch("runrestic.restic.runner.parse_forget")
+    @patch(
+        "runrestic.restic.runner.redact_password", side_effect=lambda repo, repl: repo
+    )
+    def test_forget_with_tags(self, mock_redact, mock_parse_forget, mock_mc):
+        """
+        Test forget() handles tags correctly.
+        """
+        config = {
+            "repositories": ["repo"],
+            "environment": {},
+            "execution": {},
+            "prune": {
+                "keep-last": 3,
+                "tags": ["tagone", "tagtwo"],
+            },
+        }
+        args = Namespace(dry_run=True)
+        restic_args: list[str] = []
+        runner_instance = runner.ResticRunner(config, args, restic_args)
+        process_info = {"output": [(0, "")], "time": 0.1}
+        mock_mc.return_value.run.return_value = [process_info]
+        mock_parse_forget.return_value = {"forgotten": True}
+
+        runner_instance.forget()
+        metrics = runner_instance.metrics["forget"]
+        self.assertEqual(metrics["repo"], {"forgotten": True})
+        self.assertEqual(runner_instance.metrics["errors"], 0)
+
+        # Ensure "--tag tagone --tag tagtwo" appears in the command
+        expected_cmds = [
+            [
+                "restic",
+                "-r",
+                "repo",
+                "forget",
+                "--dry-run",
+                "--keep-last",
+                "3",
+                "--tag",
+                "tagone",
+                "--tag",
+                "tagtwo",
+            ]
+        ]
+        mock_mc.assert_called_once_with(
+            expected_cmds,
+            config=config["execution"],
+            abort_reasons=[
+                "Fatal: unable to open config file",
+                "Fatal: wrong password",
+            ],
+        )
 
     @patch("runrestic.restic.runner.MultiCommand")
     @patch("runrestic.restic.runner.parse_forget")
