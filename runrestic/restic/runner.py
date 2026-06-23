@@ -77,9 +77,9 @@ class ResticRunner:
         actions = self.args.actions
 
         if not actions and self.log_metrics:
-            actions = ["backup", "prune", "check", "stats"]
+            actions = ["backup", "forget", "prune", "check", "stats"]
         elif not actions:
-            actions = ["backup", "prune", "check"]
+            actions = ["backup", "forget", "prune", "check"]
 
         logger.info("Starting '%s': %s", self.config["name"], actions)
         for action in actions:
@@ -89,8 +89,9 @@ class ResticRunner:
                 self.init()
             elif action == "backup":
                 self.backup()
-            elif action == "prune":
+            elif action == "forget":
                 self.forget()
+            elif action == "prune":
                 self.prune()
             elif action == "check":
                 self.check()
@@ -244,7 +245,7 @@ class ResticRunner:
         extra_args: list[str] = []
         if self.args.dry_run:
             extra_args += ["--dry-run"]
-        for key, value in self.config["prune"].items():
+        for key, value in self.config["forget"].items():
             if key.startswith("keep-"):
                 extra_args += [f"--{key}", str(value)]
             if key == "group-by":

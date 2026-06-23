@@ -90,7 +90,16 @@ def cli_arguments(args: list[str] | None = None) -> tuple[Namespace, list[str]]:
     if extras:
         extras = [x for x in extras if x != "--"]
     else:
-        valid_actions = ["shell", "init", "backup", "prune", "check", "stats", "unlock"]
+        valid_actions = [
+            "shell",
+            "init",
+            "backup",
+            "forget",
+            "prune",
+            "check",
+            "stats",
+            "unlock",
+        ]
         extras = []
         new_actions: list[str] = []
         for act in options.actions:

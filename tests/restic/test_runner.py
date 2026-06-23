@@ -64,7 +64,15 @@ class TestResticRunner(TestCase):
                     "execution": {},
                     "metrics": {"prometheus": {}},
                 },
-                "actions": ["init", "backup", "prune", "check", "stats", "unlock"],
+                "actions": [
+                    "init",
+                    "backup",
+                    "forget",
+                    "prune",
+                    "check",
+                    "stats",
+                    "unlock",
+                ],
                 "initial_errors": 2,
                 "expected_calls": {
                     "init": 1,
@@ -458,7 +466,7 @@ class TestResticRunner(TestCase):
             "repositories": ["repo"],
             "environment": {},
             "execution": {},
-            "prune": {"keep-last": 3},
+            "forget": {"keep-last": 3},
         }
         args = Namespace(dry_run=True)
         restic_args: list[str] = []
@@ -546,7 +554,7 @@ class TestResticRunner(TestCase):
             "repositories": ["repo"],
             "environment": {},
             "execution": {},
-            "prune": {"keep-last": 2},
+            "forget": {"keep-last": 2},
         }
         args = Namespace(dry_run=True)  # dry_run should add "--dry-run"
         restic_args: list[str] = []
@@ -598,7 +606,7 @@ class TestResticRunner(TestCase):
             "repositories": ["repo"],
             "environment": {},
             "execution": {},
-            "prune": {"group-by": "tag"},
+            "forget": {"group-by": "tag"},
         }
         args = Namespace(dry_run=False)
         restic_args: list[str] = []
